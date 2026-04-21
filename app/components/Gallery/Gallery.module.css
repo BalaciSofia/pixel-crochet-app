@@ -1,0 +1,72 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #FDF8F6 0%, #FFF 100%);
+  padding: 40px 20px;
+}
+
+.header {
+  max-width: 960px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, #E8ACC3 0%, #D48FAA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.grid {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.newCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: #FAFAFA;
+  border: 2px dashed #DDD;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.newCard:hover {
+  border-color: #E8ACC3;
+  background: #FFF2F7;
+}
+
+.plusIcon {
+  width: 48px;
+  height: 48px;
+  display: block;
+  background: #ffffff;
+  border-radius: 50%;
+  margin-bottom: 12px;
+  object-fit: contain;
+  padding: 0px;
+  box-sizing: border-box;
+}
+
+.newLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+}

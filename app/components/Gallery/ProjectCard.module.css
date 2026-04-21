@@ -1,0 +1,117 @@
+.card {
+  position: relative;
+  background: white;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #DDD;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.preview {
+  aspect-ratio: 4/3;
+  background: #FAFAF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumbnail {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.placeholder {
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(135deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  border-radius: 4px;
+}
+
+.info {
+  padding: 14px 16px;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dimensions {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 4px;
+}
+
+.date {
+  font-size: 12px;
+  color: #AAA;
+  margin: 0;
+}
+
+.menuButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .menuButton {
+  opacity: 1;
+}
+
+.menuButton:hover {
+  background: white;
+  color: #333;
+}
+
+.menu {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.menuItem:hover {
+  background: #F5F5F5;
+}

@@ -1,0 +1,174 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 16px;
+  background: white;
+  border-bottom: 1px solid #E8E8E8;
+  gap: 12px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.backIcon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+.backIcon:hover{
+  background: #EBEBEB;
+  color: #333;
+}
+
+.backButton:hover {
+  background: #EBEBEB;
+  color: #333;
+}
+
+.toolGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #F5F5F5;
+  border-radius: 10px;
+}
+
+.toolBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+.toolLogo {
+  width: 23px;
+  height: 23px;
+  object-fit: contain;
+    border-radius: 6px; 
+}
+.toolBtn.active {
+  border: 2px solid #E8ACC3;
+}
+.toolBtn:hover:not(:disabled) {
+ border: 2px solid #F3CDE0;
+}
+
+.toolBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolBtn.exportBtn {
+  width: auto;
+  font-size: 13px;
+  background: #E8E8E8;
+}
+
+.toolBtn.exportBtn:hover {
+  background: #DDD;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: #DDD;
+  margin: 0 4px;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.nameButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.nameButton:hover {
+  background: #F5F5F5;
+}
+
+.nameInput {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  border: 2px solid #E8ACC3;
+  border-radius: 6px;
+  padding: 6px 12px;
+  text-align: center;
+  min-width: 150px;
+  max-width: 200px;
+  outline: none;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.modeButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modeButton:hover {
+  background: #EBEBEB;
+}
+
+.modeButton.workMode {
+  background: linear-gradient(135deg, #E8ACC3 0%, #D48FAA 100%);
+  color: white;
+}
+
+.modeButton.workMode:hover {
+  background: linear-gradient(135deg, #D48FAA 0%, #C27D99 100%);
+}

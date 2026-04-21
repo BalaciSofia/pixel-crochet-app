@@ -1,0 +1,149 @@
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: white;
+  border-right: 1px solid #E8E8E8;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section {
+  padding: 14px;
+  background: #FAFAFA;
+  border-radius: 10px;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin: 0 0 12px;
+}
+
+.progressBar {
+  height: 12px;
+  background: #E8E8E8;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(135deg, #E8ACC3 0%, #D48FAA 100%);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+.rowList {
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rowItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #E8E8E8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rowItem:hover {
+  background: #F5F5F5;
+  border-color: #DDD;
+}
+
+.rowItem.completed {
+  background: #FCECF3;
+  border-color: #F3CDE0;
+}
+
+.rowNumber {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+}
+
+.rowItem.completed .rowNumber {
+  color: #D48FAA;
+  text-decoration: line-through;
+}
+
+.rowCheck {
+  font-size: 14px;
+  color: #AAA;
+}
+
+.rowItem.completed .rowCheck {
+  color: #E8ACC3;
+}
+
+.colorList {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.colorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.colorRow:last-child {
+  border-bottom: none;
+}
+
+.colorSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.colorHex {
+  flex: 1;
+  font-size: 12px;
+  font-family: monospace;
+  color: #666;
+}
+
+.colorCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.totalStitch {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+}
+
+.totalStitch strong {
+  color: #E8ACC3;
+}
