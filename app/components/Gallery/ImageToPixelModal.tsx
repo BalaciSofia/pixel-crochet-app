@@ -116,7 +116,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
                 className={styles.dropzone}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className={styles.uploadIcon}>📷</span>
+          <img className={styles.cameraIcon} src="/camera-logo.png" alt="" aria-hidden="true" />
                 <span>Click to select an image</span>
               </div>
             )}

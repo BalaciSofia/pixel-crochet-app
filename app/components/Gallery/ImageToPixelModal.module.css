@@ -142,7 +142,11 @@
   margin-bottom: 24px;
   cursor: pointer;
 }
-
+.cameraIcon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
 .checkbox input {
   width: 18px;
   height: 18px;
@@ -153,4 +157,10 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.cameraIcon{
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
