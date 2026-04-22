@@ -54,18 +54,21 @@ export default function WorkSidebar({
         <h3 className={styles.sectionTitle}>Rows</h3>
         
         <div className={styles.rowList}>
-          {Array.from({ length: totalRows }, (_, i) => i).map(row => (
-            <button
-              key={row}
-              className={`${styles.rowItem} ${completedRows.has(row) ? styles.completed : ''}`}
-              onClick={() => onToggleRow(row)}
-            >
-              <span className={styles.rowNumber}>Row {row + 1}</span>
-              <span className={styles.rowCheck}>
-                {completedRows.has(row) ? '✓' : '○'}
-              </span>
-            </button>
-          ))}
+          {Array.from({ length: totalRows }, (_, i) => i + 1).map(displayRow => {
+            const dataRow = totalRows - displayRow;
+            return (
+              <button
+                key={displayRow}
+                className={`${styles.rowItem} ${completedRows.has(dataRow) ? styles.completed : ''}`}
+                onClick={() => onToggleRow(dataRow)}
+              >
+                <span className={styles.rowNumber}>Row {displayRow}</span>
+                <span className={styles.rowCheck}>
+                  {completedRows.has(dataRow) ? '✓' : '○'}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
