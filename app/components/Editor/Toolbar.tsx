@@ -4,6 +4,7 @@ import React from 'react';
 import styles from './Toolbar.module.css';
 import type { EditorMode } from '../../store/useEditorStore';
 import type { Tool } from '../../types';
+import { assetPath } from '../../utils/assetPath';
 
 interface Props {
   projectName: string;
@@ -45,7 +46,7 @@ export default function Toolbar({
   return (
     <header className={styles.toolbar}>
       <button className={styles.backButton} onClick={onBack} aria-label="Back to gallery">
-        <img src='/back-arrow.png' className={styles.backIcon} alt="Back"/>
+        <img src={assetPath('/back-arrow.png')} className={styles.backIcon} alt="Back"/>
         Back
       </button>
 
@@ -56,21 +57,21 @@ export default function Toolbar({
             onClick={() => onToolChange('draw')}
             title="Draw"
           >
-            <img src='/pen-logo.png' alt="Draw" className={styles.toolLogo} />
+            <img src={assetPath('/pen-logo.png')} alt="Draw" className={styles.toolLogo} />
           </button>
           <button
             className={`${styles.toolBtn} ${tool === 'erase' ? styles.active : ''}`}
             onClick={() => onToolChange('erase')}
             title="Erase"
           >
-            <img src='/erase-logo.png' alt="Erase" className={styles.toolLogo} />
+            <img src={assetPath('/erase-logo.png')} alt="Erase" className={styles.toolLogo} />
           </button>
           <button
             className={`${styles.toolBtn} ${tool === 'fill' ? styles.active : ''}`}
             onClick={() => onToolChange('fill')}
             title="Fill"
           >
-            <img src='/bucket-logo.png' alt="Fill" className={styles.toolLogo} />
+            <img src={assetPath('/bucket-logo.png')} alt="Fill" className={styles.toolLogo} />
           </button>
           <div className={styles.divider} />
           <button
@@ -79,14 +80,14 @@ export default function Toolbar({
             disabled={!canUndo}
             title="Undo"
           >
-            <img src='/undo-logo.png' alt="Undo" className={styles.toolLogo} />
+            <img src={assetPath('/undo-logo.png')} alt="Undo" className={styles.toolLogo} />
           </button>
           <button
             className={styles.toolBtn}
             onClick={onClearCanvas}
             title="Clear Canvas"
           >
-            <img src='/bin-logo.png' alt="Clear Canvas" className={styles.toolLogo} />
+            <img src={assetPath('/bin-logo.png')} alt="Clear Canvas" className={styles.toolLogo} />
           </button>
           <div className={styles.divider} />
           <button
@@ -94,7 +95,7 @@ export default function Toolbar({
             onClick={onExportPDF}
             title="Export PDF"
           >
-            <img src='/pdf-logo.png' alt="Export PDF" className={styles.toolLogo} />
+            <img src={assetPath('/pdf-logo.png')} alt="Export PDF" className={styles.toolLogo} />
           </button>
         </div>
       )}

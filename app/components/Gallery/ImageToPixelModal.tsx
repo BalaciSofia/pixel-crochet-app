@@ -6,6 +6,7 @@ import Button from '../shared/Button';
 import Slider from '../shared/Slider';
 import useProjectStore from '../../store/useProjectStore';
 import type { Project } from '../../types';
+import { assetPath } from '../../utils/assetPath';
 import {
   loadImageFromFile,
   getImageData,
@@ -116,7 +117,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
                 className={styles.dropzone}
                 onClick={() => fileInputRef.current?.click()}
               >
-          <img className={styles.cameraIcon} src="/camera-logo.png" alt="" aria-hidden="true" />
+          <img className={styles.cameraIcon} src={assetPath('/camera-logo.png')} alt="" aria-hidden="true" />
                 <span>Click to select an image</span>
               </div>
             )}

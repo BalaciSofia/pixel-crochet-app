@@ -7,6 +7,7 @@ import NewProjectModal from './NewProjectModal';
 import ImageToPixelModal from './ImageToPixelModal';
 import useProjectStore from '../../store/useProjectStore';
 import type { Project } from '../../types';
+import { assetPath } from '../../utils/assetPath';
 
 interface Props {
   onOpenProject: (id: string) => void;
@@ -63,12 +64,12 @@ export default function Gallery({ onOpenProject }: Props) {
 
       <div className={styles.grid}>
         <button className={styles.newCard} onClick={handleOpenModal}>
-          <img className={styles.plusIcon} src="/plus-logo.png" alt="" aria-hidden="true" />
+          <img className={styles.plusIcon} src={assetPath('/plus-logo.png')} alt="" aria-hidden="true" />
           <span className={styles.newLabel}>New Pattern</span>
         </button>
 
         <button className={styles.newCard} onClick={handleOpenImageModal}>
-          <img className={styles.plusIcon} src="/camera-logo.png" alt="" aria-hidden="true" />
+          <img className={styles.plusIcon} src={assetPath('/camera-logo.png')} alt="" aria-hidden="true" />
           <span className={styles.newLabel}>Image to Pixel</span>
         </button>
 
