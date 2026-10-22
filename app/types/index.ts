@@ -6,7 +6,8 @@ export interface Project {
   cols: number;
   rows: number;
   grid: (string | null)[][];
-  palette: string[];  
+  palette: string[];
+  completedRows?: number[];
   createdAt: string;
   updatedAt: string;
 }

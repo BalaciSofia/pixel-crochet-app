@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import styles from './Editor.module.css';
 import Sidebar from './Sidebar';
@@ -25,13 +25,15 @@ export default function Editor({ projectId, onBack }: Props) {
   const renameProject = useProjectStore(state => state.renameProject);
   const resizeProject = useProjectStore(state => state.resizeProject);
   const clearCanvas = useProjectStore(state => state.clearCanvas);
-  const updateCell = useProjectStore(state => state.updateCell);
+  const updateCells = useProjectStore(state => state.updateCells);
   const updateGrid = useProjectStore(state => state.updateGrid);
   const pushHistory = useProjectStore(state => state.pushHistory);
   const undo = useProjectStore(state => state.undo);
   const canUndo = useProjectStore(state => state.canUndo());
   const addColorToPalette = useProjectStore(state => state.addColorToPalette);
   const removeColorFromPalette = useProjectStore(state => state.removeColorFromPalette);
+  const toggleRowComplete = useProjectStore(state => state.toggleRowComplete);
+  const resetCompletedRows = useProjectStore(state => state.resetCompletedRows);
 
   const mode = useEditorStore(state => state.mode);
   const tool = useEditorStore(state => state.tool);
@@ -39,7 +41,6 @@ export default function Editor({ projectId, onBack }: Props) {
   const secondaryColor = useEditorStore(state => state.secondaryColor);
   const zoom = useEditorStore(state => state.zoom);
   const showGrid = useEditorStore(state => state.showGrid);
-  const completedRows = useEditorStore(state => state.completedRows);
   const setMode = useEditorStore(state => state.setMode);
   const setTool = useEditorStore(state => state.setTool);
   const setColor = useEditorStore(state => state.setColor);
@@ -47,13 +48,15 @@ export default function Editor({ projectId, onBack }: Props) {
   const swapColors = useEditorStore(state => state.swapColors);
   const setZoom = useEditorStore(state => state.setZoom);
   const toggleGrid = useEditorStore(state => state.toggleGrid);
-  const toggleRowComplete = useEditorStore(state => state.toggleRowComplete);
-  const resetCompletedRows = useEditorStore(state => state.resetCompletedRows);
 
   const { exportPNG, exportPDF } = useExport();
   const { requestConfirm, dialogProps } = useConfirmDialog();
 
   const project = projects.find(p => p.id === projectId) ?? null;
+  const completedRows = useMemo(
+    () => new Set(project?.completedRows ?? []),
+    [project?.completedRows]
+  );
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(project?.name ?? '');
@@ -113,7 +116,7 @@ export default function Editor({ projectId, onBack }: Props) {
       confirmLabel: 'Clear',
       destructive: true,
       onConfirm: () => {
-        pushHistory(project.grid);
+        pushHistory();
         clearCanvas();
       },
     });
@@ -136,14 +139,15 @@ export default function Editor({ projectId, onBack }: Props) {
   }, [project, exportPDF]);
 
   const handleResetProgress = useCallback(() => {
+    if (!project) return;
     requestConfirm({
       title: 'Reset progress?',
       message: 'All completed rows will be unchecked. This cannot be undone.',
       confirmLabel: 'Reset',
       destructive: true,
-      onConfirm: resetCompletedRows,
+      onConfirm: () => resetCompletedRows(project.id),
     });
-  }, [resetCompletedRows, requestConfirm]);
+  }, [project, resetCompletedRows, requestConfirm]);
 
   const handleToggleMode = useCallback(() => {
     setMode(mode === 'edit' ? 'work' : 'edit');
@@ -181,6 +185,7 @@ export default function Editor({ projectId, onBack }: Props) {
       <div className={styles.main}>
         {mode === 'edit' ? (
           <Sidebar
+            key={`${project.cols}x${project.rows}`}
             project={project}
             color={color}
             onColorChange={setColor}
@@ -192,7 +197,7 @@ export default function Editor({ projectId, onBack }: Props) {
           <WorkSidebar
             project={project}
             completedRows={completedRows}
-            onToggleRow={toggleRowComplete}
+            onToggleRow={row => toggleRowComplete(project.id, row)}
             onResetProgress={handleResetProgress}
           />
         )}
@@ -205,7 +210,7 @@ export default function Editor({ projectId, onBack }: Props) {
               color={color}
               zoom={zoom}
               showGrid={showGrid}
-              updateCell={updateCell}
+              updateCells={updateCells}
               updateGrid={updateGrid}
               onHoveredCellChange={setHoveredCell}
               pushHistory={pushHistory}
@@ -216,7 +221,7 @@ export default function Editor({ projectId, onBack }: Props) {
               zoom={zoom}
               showGrid={showGrid}
               completedRows={completedRows}
-              onToggleRow={toggleRowComplete}
+              onToggleRow={row => toggleRowComplete(project.id, row)}
               onHoveredCellChange={setHoveredCell}
             />
           )}

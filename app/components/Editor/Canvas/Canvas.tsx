@@ -11,10 +11,10 @@ interface Props {
   color: string;
   zoom: number;
   showGrid: boolean;
-  updateCell: (row: number, col: number, color: string | null) => void;
+  updateCells: (cells: { row: number; col: number }[], color: string | null) => void;
   updateGrid: (grid: (string | null)[][]) => void;
   onHoveredCellChange: (cell: { row: number; col: number } | null) => void;
-  pushHistory: (grid: (string | null)[][]) => void;
+  pushHistory: () => void;
 }
 
 const Canvas = React.memo(function Canvas({
@@ -23,7 +23,7 @@ const Canvas = React.memo(function Canvas({
   color,
   zoom,
   showGrid,
-  updateCell,
+  updateCells,
   updateGrid,
   onHoveredCellChange,
   pushHistory,
@@ -37,7 +37,7 @@ const Canvas = React.memo(function Canvas({
     color,
     zoom,
     showGrid,
-    updateCell,
+    updateCells,
     updateGrid,
     pushHistory,
   });

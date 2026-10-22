@@ -11,10 +11,6 @@ export interface ConfirmRequest {
 
 const EMPTY_REQUEST: ConfirmRequest = { title: '', message: '', onConfirm: () => {} };
 
-/**
- * Holds the state for one ConfirmDialog.
- * Call requestConfirm({...}) to open it and spread dialogProps onto <ConfirmDialog />.
- */
 export function useConfirmDialog() {
   const [state, setState] = useState<{ open: boolean; request: ConfirmRequest }>({
     open: false,
@@ -26,7 +22,6 @@ export function useConfirmDialog() {
   }, []);
 
   const close = useCallback(() => {
-    // Keep the request so the text stays visible while the dialog fades out.
     setState(prev => ({ ...prev, open: false }));
   }, []);
 

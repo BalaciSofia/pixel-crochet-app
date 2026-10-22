@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState, useRef, RefObject } from 'react';
 import type { Project, Tool } from '../types';
 import { BASE_CELL_SIZE } from '../types';
 import { floodFill } from '../utils/floodFill';
+import { cellsOnLine } from '../utils/line';
 
 interface UseCanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
@@ -10,9 +11,9 @@ interface UseCanvasProps {
   color: string;
   zoom: number;
   showGrid: boolean;
-  updateCell: (row: number, col: number, color: string | null) => void;
+  updateCells: (cells: { row: number; col: number }[], color: string | null) => void;
   updateGrid: (grid: (string | null)[][]) => void;
-  pushHistory: (grid: (string | null)[][]) => void;
+  pushHistory: () => void;
 }
 
 interface HoveredCell {
@@ -27,7 +28,7 @@ export function useCanvas({
   color,
   zoom,
   showGrid,
-  updateCell,
+  updateCells,
   updateGrid,
   pushHistory,
 }: UseCanvasProps) {
@@ -59,20 +60,21 @@ export function useCanvas({
   );
 
   const applyTool = useCallback(
-    (row: number, col: number) => {
-      if (!project) return;
+    (cells: HoveredCell[]) => {
+      if (!project || cells.length === 0) return;
 
       switch (tool) {
         case 'draw':
-          updateCell(row, col, color);
+          updateCells(cells, color);
           break;
         case 'erase':
-          updateCell(row, col, null);
+          updateCells(cells, null);
           break;
         case 'fill': {
+          const { row, col } = cells[0];
           const targetColor = project.grid[row][col];
           if (targetColor !== color) {
-            pushHistory(project.grid);
+            pushHistory();
             const newGrid = floodFill(project.grid, row, col, targetColor, color);
             updateGrid(newGrid);
           }
@@ -80,7 +82,7 @@ export function useCanvas({
         }
       }
     },
-    [project, tool, color, updateCell, updateGrid, pushHistory]
+    [project, tool, color, updateCells, updateGrid, pushHistory]
   );
 
   const handleMouseDown = useCallback(
@@ -89,12 +91,12 @@ export function useCanvas({
       if (!cell || !project) return;
 
       if (tool === 'draw' || tool === 'erase') {
-        pushHistory(project.grid);
+        pushHistory();
       }
 
       isDrawing.current = true;
       lastCell.current = cell;
-      applyTool(cell.row, cell.col);
+      applyTool([cell]);
     },
     [getCellFromEvent, applyTool, pushHistory, project, tool]
   );
@@ -106,13 +108,13 @@ export function useCanvas({
 
       if (!isDrawing.current || !cell || tool === 'fill') return;
 
-      if (
-        lastCell.current &&
-        (lastCell.current.row !== cell.row || lastCell.current.col !== cell.col)
-      ) {
-        applyTool(cell.row, cell.col);
-        lastCell.current = cell;
+      const from = lastCell.current;
+      if (!from) {
+        applyTool([cell]);
+      } else if (from.row !== cell.row || from.col !== cell.col) {
+        applyTool(cellsOnLine(from, cell));
       }
+      lastCell.current = cell;
     },
     [getCellFromEvent, applyTool, tool]
   );

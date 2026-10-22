@@ -1,7 +1,3 @@
-/*
- * No universal margin/padding reset here: unlayered rules would override
- * MUI's layered styles. MUI's CssBaseline handles the page defaults.
- */
 * {
   box-sizing: border-box;
 }

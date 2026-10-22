@@ -14,7 +14,7 @@ export interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  /** Destructive actions get the cherry button and start with Cancel focused. */
+
   destructive?: boolean;
   onConfirm: () => void;
   onCancel: () => void;

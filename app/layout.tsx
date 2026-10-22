@@ -18,8 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* enableCssLayer puts MUI styles in a CSS layer, so the CSS modules
-            next to each component always win over MUI defaults. */}
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />

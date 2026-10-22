@@ -4,14 +4,13 @@ import { createTheme } from '@mui/material/styles';
 
 export const theme = createTheme({
   palette: {
-    // Rose: main actions, selection, sliders. White text on main is 5.1:1.
     primary: {
       main: '#B24A74',
       light: '#D48FAA',
       dark: '#9A3F63',
       contrastText: '#FFFFFF',
     },
-    // Cherry: accents and destructive actions. White text on main is 6.5:1.
+
     secondary: {
       main: '#B3243F',
       light: '#D4546B',
