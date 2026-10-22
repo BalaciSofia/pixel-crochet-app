@@ -7,6 +7,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
@@ -19,6 +23,7 @@ import {
   getImageData,
   pixelizeImage,
 } from '../../../utils/imageToPixel';
+import { YARN_PALETTE } from '../../../utils/yarnPalette';
 
 interface Props {
   onClose: () => void;
@@ -36,6 +41,10 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [aspectRatio, setAspectRatio] = useState(1);
+  const [useYarnPalette, setUseYarnPalette] = useState(false);
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,8 +88,8 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
     const grid = pixelizeImage(imageData, {
       targetWidth: width,
       targetHeight: height,
-      maxColors: maxColors,
-      palette: undefined,
+      maxColors,
+      yarnPalette: useYarnPalette ? YARN_PALETTE : undefined,
     });
 
     const uniqueColors = new Set<string>();
@@ -102,13 +111,14 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
 
     saveProject(updatedProject);
     onCreated(updatedProject);
-  }, [imageFile, width, height, maxColors, name, createProject, saveProject, onCreated]);
+  }, [imageFile, width, height, maxColors, useYarnPalette, name, createProject, saveProject, onCreated]);
 
   return (
     <Dialog
       open
       onClose={onClose}
       fullWidth
+      fullScreen={fullScreen}
       maxWidth="sm"
       slotProps={{ paper: { component: 'form', onSubmit: handleSubmit } }}
     >
@@ -191,6 +201,13 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
             Reduce colors by combining similar shades
           </Typography>
         </div>
+
+        <FormControlLabel
+          control={
+            <Switch checked={useYarnPalette} onChange={e => setUseYarnPalette(e.target.checked)} />
+          }
+          label="Match to yarn colors"
+        />
       </DialogContent>
 
       <DialogActions>

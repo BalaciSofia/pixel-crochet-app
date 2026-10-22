@@ -1,5 +1,3 @@
-import type { Project } from '../types';
-
 const EXPORT_CELL_SIZE = 20;
 
 export function gridToCanvas(

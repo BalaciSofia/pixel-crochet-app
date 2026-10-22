@@ -12,15 +12,13 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import RemoveIcon from '@mui/icons-material/Remove';
 import styles from './ZoomBar.module.css';
+import useEditorStore from '../../../store/useEditorStore';
 
-interface Props {
-  zoom: number;
-  onZoomChange: (zoom: number) => void;
-  showGrid: boolean;
-  onToggleGrid: () => void;
-}
-
-export default function ZoomBar({ zoom, onZoomChange, showGrid, onToggleGrid }: Props) {
+export default function ZoomBar() {
+  const zoom = useEditorStore(state => state.zoom);
+  const showGrid = useEditorStore(state => state.showGrid);
+  const onZoomChange = useEditorStore(state => state.setZoom);
+  const onToggleGrid = useEditorStore(state => state.toggleGrid);
   const zoomPercent = Math.round(zoom * 100);
 
   const handleZoomIn = useCallback(() => {

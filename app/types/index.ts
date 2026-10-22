@@ -12,13 +12,6 @@ export interface Project {
   updatedAt: string;
 }
 
-export interface EditorState {
-  tool: Tool;
-  color: string;
-  zoom: number;
-  showGrid: boolean;
-}
-
 export const DEFAULT_PALETTE = [
   '#FDE8F1', '#F7D2E3', '#EFB9CF', '#E8ACC3', '#D48FAA', '#C27D99'
 ];

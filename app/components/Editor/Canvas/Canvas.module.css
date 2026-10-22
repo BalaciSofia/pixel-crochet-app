@@ -5,6 +5,8 @@
   right: 0;
   bottom: 0;
   overflow: auto;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
 }
 
 .wrapper {
@@ -18,4 +20,7 @@
   border-radius: 4px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }

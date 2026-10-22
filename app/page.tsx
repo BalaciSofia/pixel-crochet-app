@@ -1,36 +1,33 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import Gallery from './components/Gallery';
 import Editor from './components/Editor';
+import LoadingScreen from './components/shared/LoadingScreen';
+import { redirectToGallery, useHashRoute } from './hooks/useHashRoute';
+import { useProjectsHydrated } from './hooks/useProjectsHydrated';
 import useProjectStore from './store/useProjectStore';
 
-type Screen = 'gallery' | 'editor';
-
 export default function Home() {
-  const [screen, setScreen] = useState<Screen>('gallery');
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const openProject = useProjectStore(state => state.openProject);
-  const closeProject = useProjectStore(state => state.closeProject);
-
-  const handleOpenProject = useCallback(
-    (id: string) => {
-      openProject(id);
-      setActiveProjectId(id);
-      setScreen('editor');
-    },
-    [openProject]
+  const { projectId, openProject, goToGallery } = useHashRoute();
+  const hydrated = useProjectsHydrated();
+  const projectExists = useProjectStore(state =>
+    projectId !== null && state.projects.some(p => p.id === projectId)
   );
 
-  const handleBackToGallery = useCallback(() => {
-    closeProject();
-    setActiveProjectId(null);
-    setScreen('gallery');
-  }, [closeProject]);
+  useEffect(() => {
+    if (hydrated && projectId && !projectExists) {
+      redirectToGallery();
+    }
+  }, [hydrated, projectId, projectExists]);
 
-  if (screen === 'editor' && activeProjectId) {
-    return <Editor projectId={activeProjectId} onBack={handleBackToGallery} />;
+  if (!hydrated) {
+    return <LoadingScreen label="Loading projects" />;
   }
 
-  return <Gallery onOpenProject={handleOpenProject} />;
+  if (projectId && projectExists) {
+    return <Editor projectId={projectId} onBack={goToGallery} />;
+  }
+
+  return <Gallery onOpenProject={openProject} />;
 }

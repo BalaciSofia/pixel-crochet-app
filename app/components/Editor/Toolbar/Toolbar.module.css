@@ -1,8 +1,9 @@
+
 .toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  min-height: 56px;
   padding: 0 16px;
   background: white;
   border-bottom: 1px solid #E8E8E8;
@@ -23,6 +24,28 @@
   display: flex;
   justify-content: center;
   min-width: 0;
+}
+
+.toolbar {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 899px) {
+  .toolbar {
+    padding: 4px 8px;
+    gap: 4px 8px;
+  }
+
+  .toolGroup {
+    order: 10;
+    flex-basis: 100%;
+    justify-content: center;
+    overflow-x: auto;
+  }
+
+  .nameButton {
+    max-width: 40vw;
+  }
 }
 
 .nameButton {

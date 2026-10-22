@@ -1,37 +1,42 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import styles from './Canvas.module.css';
 import { useCanvas } from '../../../hooks/useCanvas';
-import type { Project, Tool } from '../../../types';
+import useEditorStore from '../../../store/useEditorStore';
+import useProjectStore from '../../../store/useProjectStore';
+import type { Project } from '../../../types';
+import type { Cell } from '../../../utils/line';
 
 interface Props {
   project: Project;
-  tool: Tool;
-  color: string;
-  zoom: number;
-  showGrid: boolean;
-  updateCells: (cells: { row: number; col: number }[], color: string | null) => void;
-  updateGrid: (grid: (string | null)[][]) => void;
-  onHoveredCellChange: (cell: { row: number; col: number } | null) => void;
-  pushHistory: () => void;
 }
 
-const Canvas = React.memo(function Canvas({
-  project,
-  tool,
-  color,
-  zoom,
-  showGrid,
-  updateCells,
-  updateGrid,
-  onHoveredCellChange,
-  pushHistory,
-}: Props) {
+const Canvas = React.memo(function Canvas({ project }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { hoveredCell, cellSize } = useCanvas({
+  const tool = useEditorStore(state => state.tool);
+  const color = useEditorStore(state => state.color);
+  const zoom = useEditorStore(state => state.zoom);
+  const showGrid = useEditorStore(state => state.showGrid);
+  const setZoom = useEditorStore(state => state.setZoom);
+  const setHoveredCell = useEditorStore(state => state.setHoveredCell);
+
+  const updateCells = useProjectStore(state => state.updateCells);
+  const updateGrid = useProjectStore(state => state.updateGrid);
+  const pushHistory = useProjectStore(state => state.pushHistory);
+
+  const handleHover = useCallback(
+    (cell: Cell | null) => {
+      setHoveredCell(cell ? { row: cell.row + 1, col: cell.col + 1 } : null);
+    },
+    [setHoveredCell]
+  );
+
+  const { cellSize } = useCanvas({
     canvasRef,
+    scrollRef,
     project,
     tool,
     color,
@@ -40,23 +45,20 @@ const Canvas = React.memo(function Canvas({
     updateCells,
     updateGrid,
     pushHistory,
+    setZoom,
+    onHover: handleHover,
   });
 
-  useEffect(() => {
-    onHoveredCellChange(hoveredCell);
-  }, [hoveredCell, onHoveredCellChange]);
-
-  const canvasWidth = project.cols * cellSize;
-  const canvasHeight = project.rows * cellSize;
+  useEffect(() => () => setHoveredCell(null), [setHoveredCell]);
 
   return (
-    <div className={styles.container}>
+    <div ref={scrollRef} className={styles.container}>
       <div className={styles.wrapper}>
         <canvas
           ref={canvasRef}
           className={styles.canvas}
-          width={canvasWidth}
-          height={canvasHeight}
+          width={project.cols * cellSize}
+          height={project.rows * cellSize}
           style={{
             cursor: tool === 'fill' ? 'crosshair' : 'default',
           }}

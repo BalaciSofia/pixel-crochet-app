@@ -1,28 +1,39 @@
-import { useEffect, useCallback, useState, useRef, RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, RefObject } from 'react';
 import type { Project, Tool } from '../types';
 import { BASE_CELL_SIZE } from '../types';
 import { floodFill } from '../utils/floodFill';
-import { cellsOnLine } from '../utils/line';
+import { cellsOnLine, type Cell } from '../utils/line';
+
+const TOUCH_DRAW_THRESHOLD = 6;
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 4;
+
+interface Point {
+  x: number;
+  y: number;
+}
 
 interface UseCanvasProps {
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  project: Project | null;
+  scrollRef: RefObject<HTMLElement | null>;
+  project: Project;
   tool: Tool;
   color: string;
   zoom: number;
   showGrid: boolean;
-  updateCells: (cells: { row: number; col: number }[], color: string | null) => void;
+  updateCells: (cells: Cell[], color: string | null) => void;
   updateGrid: (grid: (string | null)[][]) => void;
   pushHistory: () => void;
+  setZoom: (zoom: number) => void;
+  onHover: (cell: Cell | null) => void;
 }
 
-interface HoveredCell {
-  row: number;
-  col: number;
-}
+const midpoint = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
 export function useCanvas({
   canvasRef,
+  scrollRef,
   project,
   tool,
   color,
@@ -31,37 +42,38 @@ export function useCanvas({
   updateCells,
   updateGrid,
   pushHistory,
+  setZoom,
+  onHover,
 }: UseCanvasProps) {
-  const [hoveredCell, setHoveredCell] = useState<HoveredCell | null>(null);
-  const isDrawing = useRef(false);
-  const lastCell = useRef<HoveredCell | null>(null);
-
   const cellSize = BASE_CELL_SIZE * zoom;
 
-  const getCellFromEvent = useCallback(
-    (e: MouseEvent | React.MouseEvent): HoveredCell | null => {
+  const pointers = useRef(new Map<number, Point>());
+  const strokePointer = useRef<number | null>(null);
+  const lastCell = useRef<Cell | null>(null);
+  const pendingTouch = useRef<{ id: number; start: Point; cell: Cell } | null>(null);
+  const gesture = useRef<{ distance: number; zoom: number; mid: Point } | null>(null);
+  const zoomAnchor = useRef<{ cellX: number; cellY: number; clientX: number; clientY: number } | null>(null);
+
+  const getCell = useCallback(
+    (clientX: number, clientY: number): Cell | null => {
       const canvas = canvasRef.current;
-      if (!canvas || !project) return null;
+      if (!canvas) return null;
 
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
-      const col = Math.floor(x / cellSize);
-      const row = Math.floor(y / cellSize);
+      const col = Math.floor((clientX - rect.left) / cellSize);
+      const row = Math.floor((clientY - rect.top) / cellSize);
 
       if (row < 0 || row >= project.rows || col < 0 || col >= project.cols) {
         return null;
       }
-
       return { row, col };
     },
-    [canvasRef, project, cellSize]
+    [canvasRef, project.rows, project.cols, cellSize]
   );
 
   const applyTool = useCallback(
-    (cells: HoveredCell[]) => {
-      if (!project || cells.length === 0) return;
+    (cells: Cell[]) => {
+      if (cells.length === 0) return;
 
       switch (tool) {
         case 'draw':
@@ -75,39 +87,31 @@ export function useCanvas({
           const targetColor = project.grid[row][col];
           if (targetColor !== color) {
             pushHistory();
-            const newGrid = floodFill(project.grid, row, col, targetColor, color);
-            updateGrid(newGrid);
+            updateGrid(floodFill(project.grid, row, col, targetColor, color));
           }
           break;
         }
       }
     },
-    [project, tool, color, updateCells, updateGrid, pushHistory]
+    [project.grid, tool, color, updateCells, updateGrid, pushHistory]
   );
 
-  const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
-      const cell = getCellFromEvent(e);
-      if (!cell || !project) return;
-
-      if (tool === 'draw' || tool === 'erase') {
-        pushHistory();
+  const startStroke = useCallback(
+    (cell: Cell, pointerId: number) => {
+      if (tool === 'fill') {
+        applyTool([cell]);
+        return;
       }
-
-      isDrawing.current = true;
+      pushHistory();
+      strokePointer.current = pointerId;
       lastCell.current = cell;
       applyTool([cell]);
     },
-    [getCellFromEvent, applyTool, pushHistory, project, tool]
+    [tool, applyTool, pushHistory]
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const cell = getCellFromEvent(e);
-      setHoveredCell(cell);
-
-      if (!isDrawing.current || !cell || tool === 'fill') return;
-
+  const continueStroke = useCallback(
+    (cell: Cell) => {
       const from = lastCell.current;
       if (!from) {
         applyTool([cell]);
@@ -116,40 +120,158 @@ export function useCanvas({
       }
       lastCell.current = cell;
     },
-    [getCellFromEvent, applyTool, tool]
+    [applyTool]
   );
 
-  const handleMouseUp = useCallback(() => {
-    isDrawing.current = false;
-    lastCell.current = null;
-  }, []);
+  const handlePointerDown = useCallback(
+    (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-  const handleMouseLeave = useCallback(() => {
-    setHoveredCell(null);
-    isDrawing.current = false;
-    lastCell.current = null;
-  }, []);
+      try {
+        canvasRef.current?.setPointerCapture(e.pointerId);
+      } catch {
+        // pointer already released
+      }
+      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      if (e.pointerType !== 'touch') {
+        const cell = getCell(e.clientX, e.clientY);
+        if (cell) startStroke(cell, e.pointerId);
+        return;
+      }
+
+      if (pointers.current.size >= 2) {
+        pendingTouch.current = null;
+        strokePointer.current = null;
+        lastCell.current = null;
+        const [a, b] = Array.from(pointers.current.values());
+        gesture.current = { distance: distance(a, b) || 1, zoom, mid: midpoint(a, b) };
+        return;
+      }
+
+      const cell = getCell(e.clientX, e.clientY);
+      if (cell) {
+        pendingTouch.current = { id: e.pointerId, start: { x: e.clientX, y: e.clientY }, cell };
+      }
+    },
+    [canvasRef, getCell, startStroke, zoom]
+  );
+
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (pointers.current.has(e.pointerId)) {
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+
+      if (e.pointerType !== 'touch') {
+        onHover(getCell(e.clientX, e.clientY));
+      }
+
+      const g = gesture.current;
+      if (g && pointers.current.size >= 2) {
+        const [a, b] = Array.from(pointers.current.values());
+        const mid = midpoint(a, b);
+        const canvas = canvasRef.current;
+        const scroll = scrollRef.current;
+
+        const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, g.zoom * (distance(a, b) / g.distance)));
+
+        if (canvas && Math.abs(nextZoom - zoom) > 1e-3) {
+          const rect = canvas.getBoundingClientRect();
+          zoomAnchor.current = {
+            cellX: (g.mid.x - rect.left) / cellSize,
+            cellY: (g.mid.y - rect.top) / cellSize,
+            clientX: mid.x,
+            clientY: mid.y,
+          };
+        }
+
+        if (scroll) {
+          scroll.scrollLeft -= mid.x - g.mid.x;
+          scroll.scrollTop -= mid.y - g.mid.y;
+        }
+        g.mid = mid;
+        setZoom(nextZoom);
+        return;
+      }
+
+      const pending = pendingTouch.current;
+      if (pending && pending.id === e.pointerId) {
+        if (distance(pending.start, { x: e.clientX, y: e.clientY }) < TOUCH_DRAW_THRESHOLD) return;
+        pendingTouch.current = null;
+        startStroke(pending.cell, e.pointerId);
+      }
+
+      if (strokePointer.current === e.pointerId) {
+        const cell = getCell(e.clientX, e.clientY);
+        if (cell) continueStroke(cell);
+      }
+    },
+    [canvasRef, scrollRef, getCell, onHover, startStroke, continueStroke, setZoom, zoom, cellSize]
+  );
+
+  const handlePointerEnd = useCallback(
+    (e: PointerEvent) => {
+      pointers.current.delete(e.pointerId);
+
+      const pending = pendingTouch.current;
+      if (pending && pending.id === e.pointerId) {
+        pendingTouch.current = null;
+        if (e.type === 'pointerup') startStroke(pending.cell, e.pointerId);
+      }
+
+      if (strokePointer.current === e.pointerId) {
+        strokePointer.current = null;
+        lastCell.current = null;
+      }
+
+      if (pointers.current.size < 2) gesture.current = null;
+      if (e.pointerType !== 'mouse') onHover(null);
+    },
+    [startStroke, onHover]
+  );
+
+  const handlePointerLeave = useCallback(
+    (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && strokePointer.current === null) onHover(null);
+    },
+    [onHover]
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    canvas.addEventListener('pointermove', handlePointerMove);
+    canvas.addEventListener('pointerup', handlePointerEnd);
+    canvas.addEventListener('pointercancel', handlePointerEnd);
+    canvas.addEventListener('pointerleave', handlePointerLeave);
 
     return () => {
-      canvas.removeEventListener('mousedown', handleMouseDown);
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('pointerdown', handlePointerDown);
+      canvas.removeEventListener('pointermove', handlePointerMove);
+      canvas.removeEventListener('pointerup', handlePointerEnd);
+      canvas.removeEventListener('pointercancel', handlePointerEnd);
+      canvas.removeEventListener('pointerleave', handlePointerLeave);
     };
-  }, [canvasRef, handleMouseDown, handleMouseMove, handleMouseUp, handleMouseLeave]);
+  }, [canvasRef, handlePointerDown, handlePointerMove, handlePointerEnd, handlePointerLeave]);
+
+  useLayoutEffect(() => {
+    const anchor = zoomAnchor.current;
+    const canvas = canvasRef.current;
+    const scroll = scrollRef.current;
+    if (!anchor || !canvas || !scroll) return;
+    zoomAnchor.current = null;
+
+    const rect = canvas.getBoundingClientRect();
+    scroll.scrollLeft += rect.left + anchor.cellX * cellSize - anchor.clientX;
+    scroll.scrollTop += rect.top + anchor.cellY * cellSize - anchor.clientY;
+  }, [canvasRef, scrollRef, cellSize]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !project) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -193,5 +315,5 @@ export function useCanvas({
     }
   }, [canvasRef, project, cellSize, showGrid]);
 
-  return { hoveredCell, cellSize };
+  return { cellSize };
 }

@@ -5,6 +5,8 @@
   right: 0;
   bottom: 0;
   overflow: auto;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
   background: 
     linear-gradient(45deg, #E8E8E8 25%, transparent 25%),
     linear-gradient(-45deg, #E8E8E8 25%, transparent 25%),

@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import CircularProgress from '@mui/material/CircularProgress';
+import React, { useState, useCallback, useEffect } from 'react';
+import Drawer from '@mui/material/Drawer';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import styles from './Editor.module.css';
 import Sidebar from './Sidebar';
 import WorkSidebar from './WorkSidebar';
@@ -9,10 +11,15 @@ import Canvas from './Canvas';
 import WorkCanvas from './WorkCanvas';
 import Toolbar from './Toolbar';
 import ZoomBar from './ZoomBar';
+import PositionIndicator from './PositionIndicator';
 import useProjectStore from '../../store/useProjectStore';
 import useEditorStore from '../../store/useEditorStore';
 import { useExport } from '../../hooks/useExport';
+import { useCompletedRows } from '../../hooks/useCompletedRows';
+import { useUndoRedoShortcuts } from '../../hooks/useUndoRedoShortcuts';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
+import LoadingScreen from '../shared/LoadingScreen';
+import type { Project } from '../../types';
 
 interface Props {
   projectId: string;
@@ -20,16 +27,40 @@ interface Props {
 }
 
 export default function Editor({ projectId, onBack }: Props) {
-  const projects = useProjectStore(state => state.projects);
+  const project = useProjectStore(state => state.projects.find(p => p.id === projectId) ?? null);
   const openProject = useProjectStore(state => state.openProject);
+  const closeProject = useProjectStore(state => state.closeProject);
+
+  useEffect(() => {
+    openProject(projectId);
+    return () => closeProject();
+  }, [projectId, openProject, closeProject]);
+
+  if (!project) {
+    return <LoadingScreen label="Loading project" />;
+  }
+
+  return <EditorContent key={project.id} project={project} onBack={onBack} />;
+}
+
+interface ContentProps {
+  project: Project;
+  onBack: () => void;
+}
+
+function EditorContent({ project, onBack }: ContentProps) {
+  const theme = useTheme();
+  const compact = useMediaQuery(theme.breakpoints.down('md'));
+  const [panelOpen, setPanelOpen] = useState(false);
+
   const renameProject = useProjectStore(state => state.renameProject);
   const resizeProject = useProjectStore(state => state.resizeProject);
   const clearCanvas = useProjectStore(state => state.clearCanvas);
-  const updateCells = useProjectStore(state => state.updateCells);
-  const updateGrid = useProjectStore(state => state.updateGrid);
   const pushHistory = useProjectStore(state => state.pushHistory);
   const undo = useProjectStore(state => state.undo);
-  const canUndo = useProjectStore(state => state.canUndo());
+  const redo = useProjectStore(state => state.redo);
+  const canUndo = useProjectStore(state => state.past.length > 0);
+  const canRedo = useProjectStore(state => state.future.length > 0);
   const addColorToPalette = useProjectStore(state => state.addColorToPalette);
   const removeColorFromPalette = useProjectStore(state => state.removeColorFromPalette);
   const toggleRowComplete = useProjectStore(state => state.toggleRowComplete);
@@ -38,78 +69,34 @@ export default function Editor({ projectId, onBack }: Props) {
   const mode = useEditorStore(state => state.mode);
   const tool = useEditorStore(state => state.tool);
   const color = useEditorStore(state => state.color);
-  const secondaryColor = useEditorStore(state => state.secondaryColor);
-  const zoom = useEditorStore(state => state.zoom);
-  const showGrid = useEditorStore(state => state.showGrid);
   const setMode = useEditorStore(state => state.setMode);
   const setTool = useEditorStore(state => state.setTool);
   const setColor = useEditorStore(state => state.setColor);
-  const setSecondaryColor = useEditorStore(state => state.setSecondaryColor);
-  const swapColors = useEditorStore(state => state.swapColors);
-  const setZoom = useEditorStore(state => state.setZoom);
-  const toggleGrid = useEditorStore(state => state.toggleGrid);
 
-  const { exportPNG, exportPDF } = useExport();
+  const { exportPDF } = useExport();
   const { requestConfirm, dialogProps } = useConfirmDialog();
+  const completedRows = useCompletedRows(project);
 
-  const project = projects.find(p => p.id === projectId) ?? null;
-  const completedRows = useMemo(
-    () => new Set(project?.completedRows ?? []),
-    [project?.completedRows]
-  );
+  const projectId = project.id;
 
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState(project?.name ?? '');
-  const [hoveredCell, setHoveredCell] = useState<{ row: number; col: number } | null>(null);
-
-  useEffect(() => {
-    openProject(projectId);
-  }, [projectId, openProject]);
-
-  useEffect(() => {
-    if (project) {
-      setEditedName(project.name);
-    }
-  }, [project?.name]);
-
-  const handleNameClick = useCallback(() => {
-    setIsEditingName(true);
-  }, []);
-
-  const handleNameBlur = useCallback(() => {
-    if (project && editedName.trim()) {
-      renameProject(project.id, editedName.trim());
-    }
-    setIsEditingName(false);
-  }, [project, editedName, renameProject]);
-
-  const handleNameKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleNameBlur();
-      } else if (e.key === 'Escape') {
-        setEditedName(project?.name ?? '');
-        setIsEditingName(false);
-      }
-    },
-    [handleNameBlur, project?.name]
+  const handleRename = useCallback(
+    (name: string) => renameProject(projectId, name),
+    [projectId, renameProject]
   );
 
   const handleResize = useCallback(
     (newWidth: number, newHeight: number) => {
-      if (!project) return;
       requestConfirm({
         title: 'Resize canvas?',
         message: `Resize from ${project.cols}×${project.rows} to ${newWidth}×${newHeight}? Pixels outside the new size are removed if the canvas gets smaller.`,
         confirmLabel: 'Resize',
-        onConfirm: () => resizeProject(project.id, newWidth, newHeight),
+        onConfirm: () => resizeProject(projectId, newWidth, newHeight),
       });
     },
-    [project, resizeProject, requestConfirm]
+    [project.cols, project.rows, projectId, resizeProject, requestConfirm]
   );
 
   const handleClearCanvas = useCallback(() => {
-    if (!project) return;
     requestConfirm({
       title: 'Clear the canvas?',
       message: 'This erases every pixel on the canvas. You can bring it back with Undo.',
@@ -120,124 +107,97 @@ export default function Editor({ projectId, onBack }: Props) {
         clearCanvas();
       },
     });
-  }, [clearCanvas, pushHistory, project, requestConfirm]);
+  }, [clearCanvas, pushHistory, requestConfirm]);
 
-  const handleUndo = useCallback(() => {
-    undo();
-  }, [undo]);
+  useUndoRedoShortcuts({ enabled: mode === 'edit', onUndo: undo, onRedo: redo });
 
-  const handleExportPNG = useCallback(() => {
-    if (project) {
-      exportPNG(project);
-    }
-  }, [project, exportPNG]);
-
-  const handleExportPDF = useCallback(() => {
-    if (project) {
-      exportPDF(project);
-    }
-  }, [project, exportPDF]);
+  const handleExportPDF = useCallback(() => exportPDF(project), [project, exportPDF]);
 
   const handleResetProgress = useCallback(() => {
-    if (!project) return;
     requestConfirm({
       title: 'Reset progress?',
       message: 'All completed rows will be unchecked. This cannot be undone.',
       confirmLabel: 'Reset',
       destructive: true,
-      onConfirm: () => resetCompletedRows(project.id),
+      onConfirm: () => resetCompletedRows(projectId),
     });
-  }, [project, resetCompletedRows, requestConfirm]);
+  }, [projectId, resetCompletedRows, requestConfirm]);
+
+  const handleToggleRow = useCallback(
+    (row: number) => toggleRowComplete(projectId, row),
+    [projectId, toggleRowComplete]
+  );
 
   const handleToggleMode = useCallback(() => {
     setMode(mode === 'edit' ? 'work' : 'edit');
+    setPanelOpen(false);
   }, [mode, setMode]);
 
-  if (!project) {
-    return (
-      <div className={styles.loading}>
-        <CircularProgress aria-label="Loading project" />
-      </div>
+  const openPanel = useCallback(() => setPanelOpen(true), []);
+  const closePanel = useCallback(() => setPanelOpen(false), []);
+
+  const sidebar =
+    mode === 'edit' ? (
+      <Sidebar
+        key={`${project.cols}x${project.rows}`}
+        project={project}
+        color={color}
+        onColorChange={setColor}
+        onResize={handleResize}
+        onAddColor={addColorToPalette}
+        onRemoveColor={removeColorFromPalette}
+      />
+    ) : (
+      <WorkSidebar
+        project={project}
+        completedRows={completedRows}
+        onToggleRow={handleToggleRow}
+        onResetProgress={handleResetProgress}
+      />
     );
-  }
 
   return (
     <div className={styles.container}>
       <Toolbar
-        projectName={isEditingName ? editedName : project.name}
-        isEditingName={isEditingName}
-        onNameClick={handleNameClick}
-        onNameChange={setEditedName}
-        onNameBlur={handleNameBlur}
-        onNameKeyDown={handleNameKeyDown}
+        projectName={project.name}
+        onRename={handleRename}
+        compact={compact}
+        onOpenPanel={openPanel}
         onBack={onBack}
-        onSave={() => {}}
         mode={mode}
         onToggleMode={handleToggleMode}
         tool={tool}
         onToolChange={setTool}
         canUndo={canUndo}
-        onUndo={handleUndo}
+        onUndo={undo}
+        canRedo={canRedo}
+        onRedo={redo}
         onClearCanvas={handleClearCanvas}
         onExportPDF={handleExportPDF}
       />
 
       <div className={styles.main}>
-        {mode === 'edit' ? (
-          <Sidebar
-            key={`${project.cols}x${project.rows}`}
-            project={project}
-            color={color}
-            onColorChange={setColor}
-            onResize={handleResize}
-            onAddColor={addColorToPalette}
-            onRemoveColor={removeColorFromPalette}
-          />
+        {compact ? (
+          <Drawer
+            open={panelOpen}
+            onClose={closePanel}
+            slotProps={{ paper: { className: styles.drawerPaper } }}
+          >
+            <div className={styles.drawerContent}>{sidebar}</div>
+          </Drawer>
         ) : (
-          <WorkSidebar
-            project={project}
-            completedRows={completedRows}
-            onToggleRow={row => toggleRowComplete(project.id, row)}
-            onResetProgress={handleResetProgress}
-          />
+          sidebar
         )}
 
         <div className={styles.canvasArea}>
           {mode === 'edit' ? (
-            <Canvas
-              project={project}
-              tool={tool}
-              color={color}
-              zoom={zoom}
-              showGrid={showGrid}
-              updateCells={updateCells}
-              updateGrid={updateGrid}
-              onHoveredCellChange={setHoveredCell}
-              pushHistory={pushHistory}
-            />
+            <Canvas project={project} />
           ) : (
-            <WorkCanvas
-              project={project}
-              zoom={zoom}
-              showGrid={showGrid}
-              completedRows={completedRows}
-              onToggleRow={row => toggleRowComplete(project.id, row)}
-              onHoveredCellChange={setHoveredCell}
-            />
+            <WorkCanvas project={project} completedRows={completedRows} onToggleRow={handleToggleRow} />
           )}
 
-          <ZoomBar
-            zoom={zoom}
-            onZoomChange={setZoom}
-            showGrid={showGrid}
-            onToggleGrid={toggleGrid}
-          />
-
-          {hoveredCell && (
-            <div className={styles.positionIndicator}>
-              col {mode === 'edit' ? hoveredCell.col + 1 : hoveredCell.col}, row {mode === 'edit' ? hoveredCell.row + 1 : hoveredCell.row}
-            </div>
-          )}
+          <ZoomBar />
+          <PositionIndicator />
         </div>
       </div>
 

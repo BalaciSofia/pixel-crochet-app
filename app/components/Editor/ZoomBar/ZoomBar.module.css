@@ -10,6 +10,19 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  max-width: calc(100% - 24px);
+}
+
+@media (max-width: 599px) {
+  .container {
+    bottom: 10px;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  .slider {
+    display: none;
+  }
 }
 
 .zoomValue {

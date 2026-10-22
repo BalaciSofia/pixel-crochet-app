@@ -1,27 +1,25 @@
 'use client';
 
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import styles from './WorkCanvas.module.css';
 import type { Project } from '../../../types';
 import { BASE_CELL_SIZE } from '../../../types';
+import useEditorStore from '../../../store/useEditorStore';
 
 interface Props {
   project: Project;
-  zoom: number;
-  showGrid: boolean;
   completedRows: Set<number>;
   onToggleRow: (row: number) => void;
-  onHoveredCellChange: (cell: { row: number; col: number } | null) => void;
 }
 
 const WorkCanvas = React.memo(function WorkCanvas({
   project,
-  zoom,
-  showGrid,
   completedRows,
   onToggleRow,
-  onHoveredCellChange,
 }: Props) {
+  const zoom = useEditorStore(state => state.zoom);
+  const showGrid = useEditorStore(state => state.showGrid);
+  const onHoveredCellChange = useEditorStore(state => state.setHoveredCell);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -158,6 +156,8 @@ const WorkCanvas = React.memo(function WorkCanvas({
   const handleMouseLeave = useCallback(() => {
     onHoveredCellChange(null);
   }, [onHoveredCellChange]);
+
+  useEffect(() => () => onHoveredCellChange(null), [onHoveredCellChange]);
 
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent) => {

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Project } from '../types';
 import { DEFAULT_PALETTE } from '../types';
+import { projectStorage } from './projectStorage';
 
 function createEmptyGrid(rows: number, cols: number): (string | null)[][] {
   return Array.from({ length: rows }, () => Array(cols).fill(null));
@@ -20,13 +21,27 @@ interface HistoryEntry {
 
 const MAX_HISTORY = 50;
 
-function appendHistory(history: HistoryEntry[], historyIndex: number, project: Project) {
-  const entry: HistoryEntry = { grid: project.grid, cols: project.cols, rows: project.rows };
-  const next = [...history.slice(0, historyIndex + 1), entry];
+function snapshot(project: Project): HistoryEntry {
+  return { grid: project.grid, cols: project.cols, rows: project.rows };
+}
+
+function recordHistory(past: HistoryEntry[], project: Project) {
+  const next = [...past, snapshot(project)];
   if (next.length > MAX_HISTORY) {
     next.shift();
   }
-  return { history: next, historyIndex: next.length - 1 };
+  return { past: next, future: [] as HistoryEntry[] };
+}
+
+function restore(project: Project, entry: HistoryEntry): Project {
+  return {
+    ...project,
+    grid: entry.grid,
+    cols: entry.cols,
+    rows: entry.rows,
+    completedRows: (project.completedRows ?? []).filter(r => r < entry.rows),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
 function generateId(): string {
@@ -36,8 +51,8 @@ function generateId(): string {
 interface ProjectStore {
   projects: Project[];
   activeProjectId: string | null;
-  history: HistoryEntry[];
-  historyIndex: number;
+  past: HistoryEntry[];
+  future: HistoryEntry[];
 
   createProject: (name: string, cols: number, rows: number) => Project;
   openProject: (id: string) => void;
@@ -49,12 +64,11 @@ interface ProjectStore {
   renameProject: (id: string, name: string) => void;
   resizeProject: (id: string, newCols: number, newRows: number) => void;
   clearCanvas: () => void;
-  getActiveProject: () => Project | null;
   pushHistory: () => void;
   toggleRowComplete: (id: string, row: number) => void;
   resetCompletedRows: (id: string) => void;
   undo: () => void;
-  canUndo: () => boolean;
+  redo: () => void;
   addColorToPalette: (color: string) => void;
   removeColorFromPalette: (color: string) => void;
 }
@@ -64,8 +78,8 @@ const useProjectStore = create<ProjectStore>()(
     (set, get) => ({
       projects: [],
       activeProjectId: null,
-      history: [],
-      historyIndex: -1,
+      past: [],
+      future: [],
 
       createProject: (name: string, cols: number, rows: number) => {
         const now = new Date().toISOString();
@@ -84,15 +98,15 @@ const useProjectStore = create<ProjectStore>()(
         set(state => ({
           projects: [...state.projects, project],
           activeProjectId: project.id,
-          history: [],
-          historyIndex: -1,
+          past: [],
+          future: [],
         }));
 
         return project;
       },
 
       openProject: (id: string) => {
-        set({ activeProjectId: id, history: [], historyIndex: -1 });
+        set({ activeProjectId: id, past: [], future: [] });
       },
 
       closeProject: () => {
@@ -195,19 +209,14 @@ const useProjectStore = create<ProjectStore>()(
           return {
             projects: state.projects.map(p => (p.id === id ? resized : p)),
 
-            ...(id === state.activeProjectId
-              ? appendHistory(state.history, state.historyIndex, target)
-              : {}),
+            ...(id === state.activeProjectId ? recordHistory(state.past, target) : {}),
           };
         });
       },
 
       clearCanvas: () => {
-        const { activeProjectId, projects } = get();
+        const { activeProjectId } = get();
         if (!activeProjectId) return;
-
-        const project = projects.find(p => p.id === activeProjectId);
-        if (!project) return;
 
         set(state => ({
           projects: state.projects.map(p =>
@@ -222,46 +231,40 @@ const useProjectStore = create<ProjectStore>()(
         }));
       },
 
-      getActiveProject: () => {
-        const { activeProjectId, projects } = get();
-        return projects.find(p => p.id === activeProjectId) ?? null;
-      },
-
       pushHistory: () => {
         set(state => {
           const project = state.projects.find(p => p.id === state.activeProjectId);
           if (!project) return state;
-          return appendHistory(state.history, state.historyIndex, project);
+          return recordHistory(state.past, project);
         });
       },
 
       undo: () => {
-        const { historyIndex, history, activeProjectId } = get();
-        if (historyIndex < 0 || !activeProjectId) return;
+        set(state => {
+          const project = state.projects.find(p => p.id === state.activeProjectId);
+          const entry = state.past[state.past.length - 1];
+          if (!project || !entry) return state;
 
-        const entry = history[historyIndex];
-        if (!entry) return;
-
-        set(state => ({
-          projects: state.projects.map(p =>
-            p.id === activeProjectId
-              ? {
-                  ...p,
-                  grid: entry.grid,
-                  cols: entry.cols,
-                  rows: entry.rows,
-                  completedRows: (p.completedRows ?? []).filter(r => r < entry.rows),
-                  updatedAt: new Date().toISOString(),
-                }
-              : p
-          ),
-          historyIndex: state.historyIndex - 1,
-        }));
+          return {
+            projects: state.projects.map(p => (p.id === project.id ? restore(p, entry) : p)),
+            past: state.past.slice(0, -1),
+            future: [...state.future, snapshot(project)],
+          };
+        });
       },
 
-      canUndo: () => {
-        const { historyIndex } = get();
-        return historyIndex >= 0;
+      redo: () => {
+        set(state => {
+          const project = state.projects.find(p => p.id === state.activeProjectId);
+          const entry = state.future[state.future.length - 1];
+          if (!project || !entry) return state;
+
+          return {
+            projects: state.projects.map(p => (p.id === project.id ? restore(p, entry) : p)),
+            past: [...state.past, snapshot(project)],
+            future: state.future.slice(0, -1),
+          };
+        });
       },
 
       toggleRowComplete: (id: string, row: number) => {
@@ -332,10 +335,8 @@ const useProjectStore = create<ProjectStore>()(
     }),
     {
       name: 'pps:projects',
-      partialize: (state) => ({
-        projects: state.projects,
-        activeProjectId: state.activeProjectId,
-      }),
+      storage: createJSONStorage(() => projectStorage),
+      partialize: state => ({ projects: state.projects }),
     }
   )
 );
