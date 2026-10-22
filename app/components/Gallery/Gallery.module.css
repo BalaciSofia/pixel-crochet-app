@@ -11,20 +11,11 @@
 }
 
 .title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #333;
   margin: 0 0 12px;
   background: linear-gradient(135deg, #E8ACC3 0%, #D48FAA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  color: #666;
-  margin: 0;
 }
 
 .grid {
@@ -53,20 +44,13 @@
   background: #FFF2F7;
 }
 
-.plusIcon {
+.newIcon {
   width: 48px;
   height: 48px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #ffffff;
   border-radius: 50%;
   margin-bottom: 12px;
-  object-fit: contain;
-  padding: 0px;
-  box-sizing: border-box;
-}
-
-.newLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
 }

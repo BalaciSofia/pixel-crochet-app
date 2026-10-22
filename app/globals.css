@@ -1,14 +1,9 @@
+/*
+ * No universal margin/padding reset here: unlayered rules would override
+ * MUI's layered styles. MUI's CssBaseline handles the page defaults.
+ */
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --accent: #E8ACC3;
-  --accent-dark: #D48FAA;
 }
 
 html,
@@ -17,18 +12,5 @@ body {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-button {
-  font-family: inherit;
-}
-
-input {
-  font-family: inherit;
+  margin: 0;
 }

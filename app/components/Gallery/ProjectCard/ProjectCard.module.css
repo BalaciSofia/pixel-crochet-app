@@ -1,0 +1,63 @@
+.card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #DDD;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.preview {
+  aspect-ratio: 4/3;
+  background: #FAFAF8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumbnail {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.placeholder {
+  width: 60%;
+  height: 60%;
+  background: linear-gradient(135deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  border-radius: 4px;
+}
+
+.menuButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .menuButton,
+.menuButton:focus-visible {
+  opacity: 1;
+}
+
+.menuButton:hover {
+  background: white;
+}
+
+@media (hover: none) {
+  .menuButton {
+    opacity: 1;
+  }
+}
+
+.deleteItem {
+  color: #B3243F;
+}

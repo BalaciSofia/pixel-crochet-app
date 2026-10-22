@@ -1,0 +1,92 @@
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: white;
+  border-right: 1px solid #E8E8E8;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section {
+  padding: 14px;
+  background: #FAFAFA;
+  border-radius: 10px;
+}
+
+.sectionTitle {
+  display: block;
+  margin: 0 0 12px;
+}
+
+.progressBar {
+  height: 10px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.rowList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.rowItem {
+  border-radius: 6px;
+}
+
+.rowDone {
+  text-decoration: line-through;
+}
+
+.colorList {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.colorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.colorRow:last-child {
+  border-bottom: none;
+}
+
+.colorSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.colorHex {
+  flex: 1;
+  font-size: 12px;
+  font-family: monospace;
+  color: #666;
+}
+
+.colorCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.totalStitch {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+}
+
+.totalStitch strong {
+  color: #B3243F;
+}

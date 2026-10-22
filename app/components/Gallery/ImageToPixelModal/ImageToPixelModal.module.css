@@ -1,0 +1,56 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 40px;
+  border: 2px dashed #DDD;
+  border-radius: 12px;
+  background: #FAFAFA;
+  transition: all 0.2s ease;
+}
+
+.dropzone:hover {
+  border-color: #E8ACC3;
+  background: #FFF2F7;
+}
+
+.fileInput {
+  display: none;
+}
+
+.preview {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #F5F5F5;
+}
+
+.changeButton {
+  margin-top: 10px;
+  background: #F0F0F0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.info {
+  text-align: center;
+  padding: 12px;
+  background: #F9F9F9;
+  border-radius: 8px;
+}

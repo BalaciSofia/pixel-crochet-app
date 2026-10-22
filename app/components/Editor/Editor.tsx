@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
 import styles from './Editor.module.css';
 import Sidebar from './Sidebar';
 import WorkSidebar from './WorkSidebar';
@@ -11,6 +12,7 @@ import ZoomBar from './ZoomBar';
 import useProjectStore from '../../store/useProjectStore';
 import useEditorStore from '../../store/useEditorStore';
 import { useExport } from '../../hooks/useExport';
+import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 
 interface Props {
   projectId: string;
@@ -49,6 +51,7 @@ export default function Editor({ projectId, onBack }: Props) {
   const resetCompletedRows = useEditorStore(state => state.resetCompletedRows);
 
   const { exportPNG, exportPDF } = useExport();
+  const { requestConfirm, dialogProps } = useConfirmDialog();
 
   const project = projects.find(p => p.id === projectId) ?? null;
 
@@ -92,24 +95,29 @@ export default function Editor({ projectId, onBack }: Props) {
   const handleResize = useCallback(
     (newWidth: number, newHeight: number) => {
       if (!project) return;
-      if (
-        confirm(
-          `Resize canvas from ${project.cols}×${project.rows} to ${newWidth}×${newHeight}? Existing content will be preserved.`
-        )
-      ) {
-        resizeProject(project.id, newWidth, newHeight);
-      }
+      requestConfirm({
+        title: 'Resize canvas?',
+        message: `Resize from ${project.cols}×${project.rows} to ${newWidth}×${newHeight}? Pixels outside the new size are removed if the canvas gets smaller.`,
+        confirmLabel: 'Resize',
+        onConfirm: () => resizeProject(project.id, newWidth, newHeight),
+      });
     },
-    [project, resizeProject]
+    [project, resizeProject, requestConfirm]
   );
 
   const handleClearCanvas = useCallback(() => {
     if (!project) return;
-    if (confirm('Clear the entire canvas? This cannot be undone.')) {
-      pushHistory(project.grid);
-      clearCanvas();
-    }
-  }, [clearCanvas, pushHistory, project]);
+    requestConfirm({
+      title: 'Clear the canvas?',
+      message: 'This erases every pixel on the canvas. You can bring it back with Undo.',
+      confirmLabel: 'Clear',
+      destructive: true,
+      onConfirm: () => {
+        pushHistory(project.grid);
+        clearCanvas();
+      },
+    });
+  }, [clearCanvas, pushHistory, project, requestConfirm]);
 
   const handleUndo = useCallback(() => {
     undo();
@@ -128,10 +136,14 @@ export default function Editor({ projectId, onBack }: Props) {
   }, [project, exportPDF]);
 
   const handleResetProgress = useCallback(() => {
-    if (confirm('Reset all row progress? This cannot be undone.')) {
-      resetCompletedRows();
-    }
-  }, [resetCompletedRows]);
+    requestConfirm({
+      title: 'Reset progress?',
+      message: 'All completed rows will be unchecked. This cannot be undone.',
+      confirmLabel: 'Reset',
+      destructive: true,
+      onConfirm: resetCompletedRows,
+    });
+  }, [resetCompletedRows, requestConfirm]);
 
   const handleToggleMode = useCallback(() => {
     setMode(mode === 'edit' ? 'work' : 'edit');
@@ -140,7 +152,7 @@ export default function Editor({ projectId, onBack }: Props) {
   if (!project) {
     return (
       <div className={styles.loading}>
-        <p>Loading project...</p>
+        <CircularProgress aria-label="Loading project" />
       </div>
     );
   }
@@ -223,6 +235,8 @@ export default function Editor({ projectId, onBack }: Props) {
           )}
         </div>
       </div>
+
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

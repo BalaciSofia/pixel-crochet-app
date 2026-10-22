@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Gallery from './components/Gallery/Gallery';
-import Editor from './components/Editor/Editor';
+import Gallery from './components/Gallery';
+import Editor from './components/Editor';
 import useProjectStore from './store/useProjectStore';
 
 type Screen = 'gallery' | 'editor';

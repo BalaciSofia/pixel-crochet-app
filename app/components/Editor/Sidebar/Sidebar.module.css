@@ -1,0 +1,240 @@
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: white;
+  border-right: 1px solid #E8E8E8;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section {
+  padding: 14px;
+  background: #FAFAFA;
+  border-radius: 10px;
+}
+
+.sectionTitle {
+  display: block;
+  margin: 0 0 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sizeDisplay {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  margin: 12px 0;
+}
+
+.colorSwatches {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.swatchContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.colorSwatch {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid #DDD;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.activeColorSwatch {
+  width: 56px;
+  height: 56px;
+  border: 3px solid #DDD;
+}
+
+.colorSwatch:hover {
+  transform: scale(1.05);
+  border-color: #BBB;
+}
+
+.colorInput {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.hiddenColorInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.colorLabel {
+  font-size: 11px;
+  color: #666;
+  font-family: monospace;
+}
+
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+}
+
+.paletteItem {
+  position: relative;
+}
+
+.paletteColor {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.paletteColor:hover {
+  transform: scale(1.1);
+}
+
+.paletteColor.selected {
+  border-color: #333;
+  box-shadow: 0 0 0 2px #E8ACC3;
+}
+
+.removeColorBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: #B3243F;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.removeColorBtn:hover {
+  background: #8F1B32;
+}
+
+.removeIcon {
+  font-size: 12px;
+}
+
+.paletteItem:hover .removeColorBtn,
+.removeColorBtn:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .removeColorBtn {
+    opacity: 1;
+  }
+}
+
+.addColorBtn {
+  width: 32px;
+  height: 32px;
+  border: 2px dashed #CCC;
+  border-radius: 6px;
+  background: #F8F8F8;
+  color: #999;
+}
+
+.addColorBtn:hover {
+  border-color: #D48FAA;
+  color: #D48FAA;
+  background: #FFF2F7;
+}
+
+.emptyPalette {
+  text-align: center;
+  font-size: 12px;
+  color: #AAA;
+  margin: 8px 0 0;
+}
+
+.stitchList {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.emptyStitch {
+  text-align: center;
+  color: #AAA;
+  font-size: 13px;
+  padding: 12px;
+}
+
+.stitchRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.stitchRow:last-child {
+  border-bottom: none;
+}
+
+.stitchSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.stitchHex {
+  flex: 1;
+  font-size: 12px;
+  font-family: monospace;
+  color: #666;
+}
+
+.stitchCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.totalStitch {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+}
+
+.totalStitch strong {
+  color: #B3243F;
+}

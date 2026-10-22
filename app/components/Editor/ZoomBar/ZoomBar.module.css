@@ -1,0 +1,29 @@
+.container {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.zoomValue {
+  min-width: 50px;
+  text-align: center;
+}
+
+.slider {
+  width: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.gridToggle {
+  border: none;
+  padding: 5px;
+}
