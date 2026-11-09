@@ -1,13 +1,8 @@
 import { useCallback } from 'react';
 import type { Project } from '../types';
-import { gridToCanvas, downloadCanvas, getStitchCounts } from '../utils/exportUtils';
+import { gridToCanvas, getStitchCounts } from '../utils/exportUtils';
 
 export function useExport() {
-  const exportPNG = useCallback((project: Project) => {
-    const canvas = gridToCanvas(project.grid, 20);
-    downloadCanvas(canvas, `${project.name}.png`);
-  }, []);
-
   const exportPDF = useCallback(async (project: Project) => {
     const { jsPDF } = await import('jspdf');
 
@@ -86,5 +81,5 @@ export function useExport() {
     pdf.save(`${project.name}.pdf`);
   }, []);
 
-  return { exportPNG, exportPDF };
+  return { exportPDF };
 }

@@ -62,13 +62,6 @@ export function getStitchCounts(grid: (string | null)[][]): Map<string, number> 
   return counts;
 }
 
-export function downloadCanvas(canvas: HTMLCanvasElement, filename: string): void {
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-}
-
 export function createThumbnail(
   grid: (string | null)[][],
   maxSize: number = 100
