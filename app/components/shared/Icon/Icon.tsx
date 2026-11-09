@@ -71,6 +71,12 @@ const PATHS = {
   ),
   fullscreen: <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  help: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17.2v.1" />
+    </>
+  ),
   reset: <path d="M4 12a8 8 0 1 0 2.3-5.7M4 4v4h4" />,
   warning: (
     <>

@@ -12,6 +12,8 @@ import WorkCanvas from './WorkCanvas';
 import Toolbar from './Toolbar';
 import ZoomBar from './ZoomBar';
 import PositionIndicator from './PositionIndicator';
+import MatchYarnDialog from './MatchYarnDialog';
+import { useColorsToBuy } from '../../hooks/useOwnedColors';
 import useProjectStore from '../../store/useProjectStore';
 import useEditorStore from '../../store/useEditorStore';
 import { useExport } from '../../hooks/useExport';
@@ -53,6 +55,7 @@ function EditorContent({ project, onBack }: ContentProps) {
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('md'));
   const [panelOpen, setPanelOpen] = useState(false);
+  const [matchOpen, setMatchOpen] = useState(false);
 
   const renameProject = useProjectStore(state => state.renameProject);
   const resizeProject = useProjectStore(state => state.resizeProject);
@@ -66,6 +69,8 @@ function EditorContent({ project, onBack }: ContentProps) {
   const removeColorFromPalette = useProjectStore(state => state.removeColorFromPalette);
   const toggleRowComplete = useProjectStore(state => state.toggleRowComplete);
   const resetCompletedRows = useProjectStore(state => state.resetCompletedRows);
+  const replaceColors = useProjectStore(state => state.replaceColors);
+  const setCmPerStitch = useProjectStore(state => state.setCmPerStitch);
 
   const mode = useEditorStore(state => state.mode);
   const tool = useEditorStore(state => state.tool);
@@ -83,6 +88,27 @@ function EditorContent({ project, onBack }: ContentProps) {
   );
 
   const projectId = project.id;
+  const toBuy = useColorsToBuy(project);
+
+  const openMatch = useCallback(() => {
+    setPanelOpen(false);
+    setMatchOpen(true);
+  }, []);
+
+  const handleApplyMatches = useCallback(
+    (replacements: Record<string, string>) => {
+      replaceColors(projectId, replacements);
+      const current = useEditorStore.getState().color.toUpperCase();
+      if (replacements[current]) setColor(replacements[current]);
+      setMatchOpen(false);
+    },
+    [projectId, replaceColors, setColor]
+  );
+
+  const handleCmPerStitch = useCallback(
+    (value: number | undefined) => setCmPerStitch(projectId, value),
+    [projectId, setCmPerStitch]
+  );
 
   const palette = project.palette;
   useEffect(() => {
@@ -160,6 +186,7 @@ function EditorContent({ project, onBack }: ContentProps) {
         onResize={handleResize}
         onAddColor={addColorToPalette}
         onRemoveColor={removeColorFromPalette}
+        onMatchYarn={openMatch}
       />
     ) : (
       <WorkSidebar
@@ -168,6 +195,8 @@ function EditorContent({ project, onBack }: ContentProps) {
         nextRow={nextRow}
         onToggleRow={handleToggleRow}
         onResetProgress={handleResetProgress}
+        onMatchYarn={openMatch}
+        onCmPerStitchChange={handleCmPerStitch}
       />
     );
 
@@ -223,6 +252,14 @@ function EditorContent({ project, onBack }: ContentProps) {
 
         {!compact && sidebar}
       </div>
+
+      {matchOpen && (
+        <MatchYarnDialog
+          colors={toBuy}
+          onClose={() => setMatchOpen(false)}
+          onApply={handleApplyMatches}
+        />
+      )}
 
       <ConfirmDialog {...dialogProps} />
     </div>

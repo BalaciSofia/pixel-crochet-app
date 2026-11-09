@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
 import styles from './WorkSidebar.module.css';
+import YarnCalculator from './YarnCalculator';
 import Icon from '../../shared/Icon';
 import SectionLabel from '../../shared/SectionLabel';
 import BuyBadge from '../../shared/BuyBadge';
@@ -18,6 +19,22 @@ interface Props {
   nextRow: number | null;
   onToggleRow: (row: number) => void;
   onResetProgress: () => void;
+  onMatchYarn: () => void;
+  onCmPerStitchChange: (value: number | undefined) => void;
+}
+
+const EXTRA = 0.1;
+
+function metres(stitches: number, cmPerStitch: number): string {
+  return ((stitches * cmPerStitch * (1 + EXTRA)) / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+function parseCm(value: string): number | undefined {
+  const n = Number(value.replace(',', '.'));
+  return value.trim() !== '' && Number.isFinite(n) && n > 0 ? n : undefined;
 }
 
 export default function WorkSidebar({
@@ -26,7 +43,21 @@ export default function WorkSidebar({
   nextRow,
   onToggleRow,
   onResetProgress,
+  onMatchYarn,
+  onCmPerStitchChange,
 }: Props) {
+  const [calcOpen, setCalcOpen] = useState(project.cmPerStitch !== undefined);
+  const [cmText, setCmText] = useState(
+    project.cmPerStitch !== undefined ? String(project.cmPerStitch) : ''
+  );
+  const cm = parseCm(cmText);
+
+  const handleCmChange = (value: string) => {
+    setCmText(value);
+    const parsed = parseCm(value);
+    if (parsed !== undefined || value.trim() === '') onCmPerStitchChange(parsed);
+  };
+
   const totalRows = project.rows;
   const completedCount = completedRows.size;
   const progress = totalRows > 0 ? Math.round((completedCount / totalRows) * 100) : 0;
@@ -126,15 +157,40 @@ export default function WorkSidebar({
                   </>
                 )}
                 <span className={styles.colorCount}>{count.toLocaleString('en-US')}</span>
+                {cm !== undefined && <span className={styles.metres}>≈ {metres(count, cm)} m</span>}
               </li>
             );
           })}
         </ul>
         <div className={styles.total}>
-          <span>Total stitches</span>
+          <span className={styles.totalLabel}>Total stitches</span>
           <span className={styles.totalValue}>{totalStitches.toLocaleString('en-US')}</span>
+          {cm !== undefined && (
+            <span className={`${styles.metres} ${styles.totalMetres}`}>≈ {metres(totalStitches, cm)} m</span>
+          )}
         </div>
+        {cm !== undefined && (
+          <p className={styles.extraNote}>Includes 10% extra for color changes and mistakes.</p>
+        )}
+        <YarnCalculator
+          open={calcOpen}
+          onOpen={() => setCalcOpen(true)}
+          value={cmText}
+          onChange={handleCmChange}
+          autoFocus={project.cmPerStitch === undefined}
+        />
         <ToBuyList colors={usedToBuy} />
+        {toBuyList.length > 0 && (
+          <Button
+            variant="outlined"
+            color="inherit"
+            fullWidth
+            onClick={onMatchYarn}
+            className={styles.matchButton}
+          >
+            Try matching to my yarn
+          </Button>
+        )}
       </section>
 
       <section className={styles.resetSection}>

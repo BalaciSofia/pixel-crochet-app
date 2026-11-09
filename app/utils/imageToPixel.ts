@@ -202,6 +202,14 @@ function matchToYarn(
   return { colors, toBuy: purchases.map(p => p.hex) };
 }
 
+export function suggestYarnMatch(hex: string, yarnColors: string[]): string | null {
+  if (yarnColors.length === 0) return null;
+  const lab = hexToOklab(hex);
+  const yarns = yarnColors.map(hexToOklab);
+  const nearest = nearestBySimilarity(lab, yarns);
+  return similarity(lab, yarns[nearest]) >= YARN_MATCH_CUTOFF ? yarnColors[nearest].toUpperCase() : null;
+}
+
 function groupSamples(colors: Lab[]): CellSample[] {
   const groups = new Map<string, CellSample>();
   for (const lab of colors) {

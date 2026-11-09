@@ -12,7 +12,6 @@ import { useYarnNames } from '../../../hooks/useYarnNames';
 import { useColorsToBuy, useOwnedColors } from '../../../hooks/useOwnedColors';
 import useYarnStore from '../../../store/useYarnStore';
 import type { Project } from '../../../types';
-import { getStitchCounts } from '../../../utils/exportUtils';
 
 const MIN_SIZE = 1;
 const MAX_SIZE = 200;
@@ -24,6 +23,7 @@ interface Props {
   onResize: (width: number, height: number) => void;
   onAddColor: (color: string) => void;
   onRemoveColor: (color: string) => void;
+  onMatchYarn: () => void;
 }
 
 function parseSize(value: string): number | null {
@@ -39,6 +39,7 @@ export default function Sidebar({
   onResize,
   onAddColor,
   onRemoveColor,
+  onMatchYarn,
 }: Props) {
   const [pendingWidth, setPendingWidth] = useState(String(project.cols));
   const [pendingHeight, setPendingHeight] = useState(String(project.rows));
@@ -47,16 +48,6 @@ export default function Sidebar({
   const owned = useOwnedColors();
   const addYarn = useYarnStore(state => state.addYarn);
   const toBuyList = useColorsToBuy(project);
-
-  const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
-  const totalStitches = useMemo(
-    () => Array.from(stitchCounts.values()).reduce((a, b) => a + b, 0),
-    [stitchCounts]
-  );
-  const sortedCounts = useMemo(
-    () => Array.from(stitchCounts.entries()).sort((a, b) => b[1] - a[1]),
-    [stitchCounts]
-  );
 
   const width = parseSize(pendingWidth);
   const height = parseSize(pendingHeight);
@@ -194,9 +185,14 @@ export default function Sidebar({
         )}
 
         <ToBuyList colors={toBuyList} />
+        {toBuyList.length > 0 && (
+          <Button variant="outlined" color="inherit" fullWidth onClick={onMatchYarn} className={styles.matchButton}>
+            Try matching to my yarn
+          </Button>
+        )}
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.last}`}>
         <SectionLabel>Canvas size</SectionLabel>
         <form className={styles.sizeForm} onSubmit={handleResizeSubmit}>
           <div className={styles.sizeInputs}>
@@ -236,28 +232,6 @@ export default function Sidebar({
         </form>
       </section>
 
-      <section className={`${styles.section} ${styles.last}`}>
-        <SectionLabel>Stitch count</SectionLabel>
-        {sortedCounts.length === 0 ? (
-          <p className={styles.empty}>No stitches yet</p>
-        ) : (
-          <ul className={styles.stitchList}>
-            {sortedCounts.map(([hex, count]) => (
-              <li key={hex} className={styles.stitchRow}>
-                <span className={styles.stitchSwatch} style={{ backgroundColor: hex }} aria-hidden="true" />
-                <span className={styles.stitchName}>
-                  {nameOf(hex) ?? <span className={styles.mono}>{hex.toUpperCase()}</span>}
-                </span>
-                <span className={styles.stitchCount}>{count.toLocaleString('en-US')}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className={styles.total}>
-          <span>Total stitches</span>
-          <span className={styles.totalValue}>{totalStitches.toLocaleString('en-US')}</span>
-        </div>
-      </section>
     </aside>
   );
 }

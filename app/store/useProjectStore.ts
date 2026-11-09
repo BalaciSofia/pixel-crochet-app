@@ -23,16 +23,19 @@ interface HistoryEntry {
   grid: (string | null)[][];
   cols: number;
   rows: number;
+  palette?: string[];
 }
 
 const MAX_HISTORY = 50;
 
-function snapshot(project: Project): HistoryEntry {
-  return { grid: project.grid, cols: project.cols, rows: project.rows };
+function snapshot(project: Project, withPalette = false): HistoryEntry {
+  const entry: HistoryEntry = { grid: project.grid, cols: project.cols, rows: project.rows };
+  if (withPalette) entry.palette = project.palette;
+  return entry;
 }
 
-function recordHistory(past: HistoryEntry[], project: Project) {
-  const next = [...past, snapshot(project)];
+function recordHistory(past: HistoryEntry[], project: Project, withPalette = false) {
+  const next = [...past, snapshot(project, withPalette)];
   if (next.length > MAX_HISTORY) {
     next.shift();
   }
@@ -45,6 +48,7 @@ function restore(project: Project, entry: HistoryEntry): Project {
     grid: entry.grid,
     cols: entry.cols,
     rows: entry.rows,
+    palette: entry.palette ?? project.palette,
     completedRows: (project.completedRows ?? []).filter(r => r < entry.rows),
     updatedAt: new Date().toISOString(),
   };
@@ -77,6 +81,8 @@ interface ProjectStore {
   redo: () => void;
   addColorToPalette: (color: string) => void;
   removeColorFromPalette: (color: string) => void;
+  replaceColors: (id: string, replacements: Record<string, string>) => void;
+  setCmPerStitch: (id: string, value: number | undefined) => void;
 }
 
 const useProjectStore = create<ProjectStore>()(
@@ -254,7 +260,7 @@ const useProjectStore = create<ProjectStore>()(
           return {
             projects: state.projects.map(p => (p.id === project.id ? restore(p, entry) : p)),
             past: state.past.slice(0, -1),
-            future: [...state.future, snapshot(project)],
+            future: [...state.future, snapshot(project, entry.palette !== undefined)],
           };
         });
       },
@@ -267,7 +273,7 @@ const useProjectStore = create<ProjectStore>()(
 
           return {
             projects: state.projects.map(p => (p.id === project.id ? restore(p, entry) : p)),
-            past: [...state.past, snapshot(project)],
+            past: [...state.past, snapshot(project, entry.palette !== undefined)],
             future: state.future.slice(0, -1),
           };
         });
@@ -336,6 +342,42 @@ const useProjectStore = create<ProjectStore>()(
               updatedAt: new Date().toISOString(),
             };
           }),
+        }));
+      },
+
+      replaceColors: (id: string, replacements: Record<string, string>) => {
+        const map = new Map(
+          Object.entries(replacements).map(([from, to]) => [from.toUpperCase(), to.toUpperCase()])
+        );
+        if (map.size === 0) return;
+        const swap = (color: string) => map.get(color.toUpperCase()) ?? color;
+
+        set(state => {
+          const project = state.projects.find(p => p.id === id);
+          if (!project) return state;
+
+          const palette: string[] = [];
+          for (const color of project.palette ?? []) {
+            const next = swap(color);
+            if (!palette.some(c => c.toUpperCase() === next.toUpperCase())) palette.push(next);
+          }
+          const grid = project.grid.map(row => row.map(cell => (cell ? swap(cell) : cell)));
+          const history = id === state.activeProjectId ? recordHistory(state.past, project, true) : {};
+
+          return {
+            ...history,
+            projects: state.projects.map(p =>
+              p.id === id ? { ...p, grid, palette, updatedAt: new Date().toISOString() } : p
+            ),
+          };
+        });
+      },
+
+      setCmPerStitch: (id: string, value: number | undefined) => {
+        set(state => ({
+          projects: state.projects.map(p =>
+            p.id === id ? { ...p, cmPerStitch: value, updatedAt: new Date().toISOString() } : p
+          ),
         }));
       },
     }),

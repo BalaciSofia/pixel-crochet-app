@@ -170,14 +170,43 @@
 
 .total {
   display: flex;
-  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
   font-size: 13px;
   font-weight: 600;
+}
+
+.totalLabel {
+  flex: 1;
 }
 
 .totalValue {
   font: 600 13px var(--font-mono-stack);
   color: var(--cherry);
+}
+
+.metres {
+  min-width: 64px;
+  text-align: right;
+  font: 500 12px var(--font-mono-stack);
+  color: var(--rose);
+}
+
+.totalMetres {
+  font-weight: 600;
+}
+
+.extraNote {
+  margin: -4px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.matchButton:global(.MuiButton-root) {
+  min-height: 40px;
+  font-weight: 600;
+  font-size: 13px;
+  border-color: var(--line-input);
 }
 
 .resetSection {

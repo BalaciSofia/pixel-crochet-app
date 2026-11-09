@@ -8,6 +8,7 @@ export interface Project {
   grid: (string | null)[][];
   palette: string[];
   completedRows?: number[];
+  cmPerStitch?: number;
   createdAt: string;
   updatedAt: string;
 }

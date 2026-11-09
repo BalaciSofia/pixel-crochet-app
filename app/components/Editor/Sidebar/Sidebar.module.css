@@ -256,48 +256,9 @@
   font-size: 13px;
 }
 
-.stitchList {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.stitchRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid #F6F0F2;
-  font-size: 13px;
-}
-
-.stitchSwatch {
-  width: 16px;
-  height: 16px;
-  flex: none;
-  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.2);
-}
-
-.stitchName {
-  flex: 1;
-  min-width: 0;
-}
-
-.stitchCount {
-  font: 500 13px var(--font-mono-stack);
-}
-
-.total {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 4px;
-  font-size: 13px;
+.matchButton:global(.MuiButton-root) {
+  min-height: 40px;
   font-weight: 600;
-}
-
-.totalValue {
-  font: 600 13px var(--font-mono-stack);
-  color: var(--cherry);
+  font-size: 13px;
+  border-color: var(--line-input);
 }
