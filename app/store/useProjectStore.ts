@@ -327,6 +327,7 @@ const useProjectStore = create<ProjectStore>()(
             return {
               ...p,
               palette: palette.filter(c => c.toUpperCase() !== color.toUpperCase()),
+              toBuy: p.toBuy?.filter(c => c.toUpperCase() !== color.toUpperCase()),
               updatedAt: new Date().toISOString(),
             };
           }),

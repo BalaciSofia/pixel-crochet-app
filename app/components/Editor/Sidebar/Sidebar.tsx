@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import styles from './Sidebar.module.css';
@@ -96,6 +97,10 @@ export default function Sidebar({
   );
 
   const palette = project.palette || [];
+  const toBuy = useMemo(
+    () => new Set((project.toBuy ?? []).map(c => c.toUpperCase())),
+    [project.toBuy]
+  );
 
   return (
     <aside className={styles.sidebar}>
@@ -177,9 +182,14 @@ export default function Sidebar({
                   className={`${styles.paletteColor} ${c.toUpperCase() === color.toUpperCase() ? styles.selected : ''}`}
                   style={{ backgroundColor: c }}
                   onClick={() => handlePaletteColorClick(c)}
-                  title={c}
-                  aria-label={`Use color ${c}`}
+                  title={toBuy.has(c.toUpperCase()) ? `${c} (need to buy)` : c}
+                  aria-label={`Use color ${c}${toBuy.has(c.toUpperCase()) ? ', need to buy' : ''}`}
                 />
+                {toBuy.has(c.toUpperCase()) && (
+                  <span className={styles.buyBadge} aria-hidden="true">
+                    <ShoppingCartIcon className={styles.buyIcon} />
+                  </span>
+                )}
                 <IconButton
                   size="small"
                   className={styles.removeColorBtn}
@@ -204,6 +214,11 @@ export default function Sidebar({
               className={styles.hiddenColorInput}
             />
           </div>
+          {toBuy.size > 0 && (
+            <Typography variant="caption" color="text.secondary" className={styles.buyHint}>
+              Cart icon: no close match in your yarn, needs buying
+            </Typography>
+          )}
           {palette.length === 0 && (
             <p className={styles.emptyPalette}>No colors yet. Add some!</p>
           )}
