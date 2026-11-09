@@ -3,6 +3,7 @@ import type { Project, Tool } from '../types';
 import { BASE_CELL_SIZE } from '../types';
 import { floodFill } from '../utils/floodFill';
 import { cellsOnLine, type Cell } from '../utils/line';
+import { paintGridLines, paintPattern } from '../utils/paintPattern';
 
 const TOUCH_DRAW_THRESHOLD = 6;
 const MIN_ZOOM = 0.25;
@@ -273,37 +274,8 @@ export function useCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = project.cols * cellSize;
-    const height = project.rows * cellSize;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, width, height);
-
-    for (let row = 0; row < project.rows; row++) {
-      for (let col = 0; col < project.cols; col++) {
-        const cellColor = project.grid[row][col];
-        if (cellColor) {
-          ctx.fillStyle = cellColor;
-          ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-
-    if (showGrid) {
-      ctx.fillStyle = '#D7CCD1';
-      for (let row = 1; row < project.rows; row++) {
-        ctx.fillRect(0, Math.round(row * cellSize) - 1, width, 1);
-      }
-      for (let col = 1; col < project.cols; col++) {
-        ctx.fillRect(Math.round(col * cellSize) - 1, 0, 1, height);
-      }
-    }
+    const painted = paintPattern(canvas, project.grid, cellSize);
+    if (painted && showGrid) paintGridLines(painted, project.cols, project.rows, cellSize);
   }, [canvasRef, project, cellSize, showGrid]);
 
   return { cellSize };

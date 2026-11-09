@@ -5,6 +5,7 @@ import styles from './WorkCanvas.module.css';
 import type { Project } from '../../../types';
 import { BASE_CELL_SIZE } from '../../../types';
 import useEditorStore from '../../../store/useEditorStore';
+import { paintGridLines, paintPattern, paintRowBand } from '../../../utils/paintPattern';
 
 interface Props {
   project: Project;
@@ -36,42 +37,15 @@ const WorkCanvas = React.memo(function WorkCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const painted = paintPattern(canvas, project.grid, cellSize);
+    if (!painted) return;
 
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, width, height);
-
-    for (let row = 0; row < project.rows; row++) {
-      for (let col = 0; col < project.cols; col++) {
-        const cellColor = project.grid[row][col];
-        if (cellColor) {
-          ctx.fillStyle = cellColor;
-          ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-        }
-      }
-    }
-
-    ctx.fillStyle = DONE_OVERLAY;
     for (const row of completedRows) {
-      if (row >= 0 && row < project.rows) {
-        ctx.fillRect(0, row * cellSize, width, cellSize);
-      }
+      if (row >= 0 && row < project.rows) paintRowBand(painted, row, DONE_OVERLAY);
     }
 
-    if (showGrid) {
-      ctx.fillStyle = '#D7CCD1';
-      for (let row = 1; row < project.rows; row++) {
-        ctx.fillRect(0, Math.round(row * cellSize) - 1, width, 1);
-      }
-      for (let col = 1; col < project.cols; col++) {
-        ctx.fillRect(Math.round(col * cellSize) - 1, 0, 1, height);
-      }
-    }
-  }, [project, cellSize, width, height, showGrid, completedRows]);
+    if (showGrid) paintGridLines(painted, project.cols, project.rows, cellSize);
+  }, [project, cellSize, showGrid, completedRows]);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -136,8 +110,7 @@ const WorkCanvas = React.memo(function WorkCanvas({
             <canvas
               ref={canvasRef}
               className={styles.canvas}
-              width={width}
-              height={height}
+              style={{ width, height }}
               role="img"
               aria-label="Pattern grid with completed rows dimmed"
               onMouseMove={handleMouseMove}

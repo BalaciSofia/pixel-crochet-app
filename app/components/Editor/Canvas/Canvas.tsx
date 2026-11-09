@@ -77,8 +77,7 @@ const Canvas = React.memo(function Canvas({ project }: Props) {
             <canvas
               ref={canvasRef}
               className={styles.canvas}
-              width={width}
-              height={height}
+              style={{ width, height }}
               role="img"
               aria-label={`Pattern grid, ${project.cols} by ${project.rows} stitches`}
             />
