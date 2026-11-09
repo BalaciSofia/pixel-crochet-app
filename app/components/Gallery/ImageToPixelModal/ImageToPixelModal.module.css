@@ -105,3 +105,9 @@
   color: var(--ink);
   text-align: right;
 }
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cherry);
+}

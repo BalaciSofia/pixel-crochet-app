@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useId, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useId, useRef } from 'react';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
 import styles from './ImageToPixelModal.module.css';
@@ -18,6 +18,13 @@ import {
 import YarnStashDialog from '../YarnStashDialog';
 import useYarnStore from '../../../store/useYarnStore';
 
+const MIN_SIZE = 8;
+const MAX_SIZE = 200;
+
+function clampSize(value: number): number {
+  return Math.min(MAX_SIZE, Math.max(MIN_SIZE, value));
+}
+
 interface Props {
   onClose: () => void;
   onCreated: (project: Project) => void;
@@ -32,7 +39,9 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
   const [height, setHeight] = useState(32);
   const [maxColors, setMaxColors] = useState(16);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [aspectRatio, setAspectRatio] = useState(1);
   const [useYarnPalette, setUseYarnPalette] = useState(false);
   const [stashOpen, setStashOpen] = useState(false);
@@ -41,18 +50,33 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
   const switchLabelId = useId();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const loadIdRef = useRef(0);
+  const submittingRef = useRef(false);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const selectFile = useCallback(
     async (file: File) => {
-      setImageFile(file);
+      const loadId = ++loadIdRef.current;
+      setImage(null);
+      setError(null);
       setPreviewUrl(URL.createObjectURL(file));
 
-      const img = await loadImageFromFile(file);
-      const ratio = img.width / img.height;
-      setAspectRatio(ratio);
-
-      const newHeight = Math.round(width / ratio);
-      setHeight(Math.min(200, Math.max(1, newHeight)));
+      try {
+        const img = await loadImageFromFile(file);
+        if (loadId !== loadIdRef.current) return;
+        const ratio = img.width / img.height;
+        setImage(img);
+        setAspectRatio(ratio);
+        setHeight(clampSize(Math.round(width / ratio)));
+      } catch {
+        if (loadId !== loadIdRef.current) return;
+        setPreviewUrl(null);
+        setError('This image could not be opened. Try a different file.');
+      }
     },
     [width]
   );
@@ -86,8 +110,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
 
   const handleWidthChange = useCallback((newWidth: number) => {
     setWidth(newWidth);
-    const newHeight = Math.round(newWidth / aspectRatio);
-    setHeight(Math.min(200, Math.max(1, newHeight)));
+    setHeight(clampSize(Math.round(newWidth / aspectRatio)));
   }, [aspectRatio]);
 
   const handleHeightChange = useCallback((newHeight: number) => {
@@ -98,20 +121,27 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
     setMaxColors(value);
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!imageFile) return;
+    if (!image || submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
 
-    const img = await loadImageFromFile(imageFile);
-    const imageData = getImageData(img);
-
-    const { grid } = pixelizeImage(imageData, {
-      targetWidth: width,
-      targetHeight: height,
-      maxColors,
-      yarnPalette: useYarnPalette && yarns.length > 0 ? yarns.map(yarn => yarn.color) : undefined,
-    });
+    let grid: (string | null)[][];
+    try {
+      ({ grid } = pixelizeImage(getImageData(image), {
+        targetWidth: width,
+        targetHeight: height,
+        maxColors,
+        yarnPalette: useYarnPalette && yarns.length > 0 ? yarns.map(yarn => yarn.color) : undefined,
+      }));
+    } catch {
+      submittingRef.current = false;
+      setSubmitting(false);
+      setError('This image could not be turned into a pattern. Try a different file.');
+      return;
+    }
 
     const uniqueColors = new Set<string>();
     for (const row of grid) {
@@ -132,7 +162,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
 
     saveProject(updatedProject);
     onCreated(updatedProject);
-  }, [imageFile, width, height, maxColors, useYarnPalette, yarns, name, createProject, saveProject, onCreated]);
+  }, [image, width, height, maxColors, useYarnPalette, yarns, name, createProject, saveProject, onCreated]);
 
   return (
     <>
@@ -146,7 +176,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
             <Button variant="outlined" color="neutral" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="contained" type="submit" disabled={!imageFile}>
+            <Button variant="contained" type="submit" disabled={!image || submitting}>
               Create pattern
             </Button>
           </>
@@ -190,6 +220,12 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
           </button>
         )}
 
+        {error && (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        )}
+
         <Field label="Pattern name">
           <FieldInput
             value={name}
@@ -199,8 +235,8 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
         </Field>
 
         <div className={styles.row}>
-          <Slider label="Width" value={width} min={8} max={200} onChange={handleWidthChange} />
-          <Slider label="Height" value={height} min={8} max={200} onChange={handleHeightChange} />
+          <Slider label="Width" value={width} min={MIN_SIZE} max={MAX_SIZE} onChange={handleWidthChange} />
+          <Slider label="Height" value={height} min={MIN_SIZE} max={MAX_SIZE} onChange={handleHeightChange} />
         </div>
 
         <Slider
