@@ -12,13 +12,14 @@ import Scatter from './FiletPanel/Scatter';
 import Welcome from './Welcome';
 import HomeHeader from './HomeHeader';
 import YarnStrip from './YarnStrip';
+import PatternToolbar, { type SortOrder, type StatusFilter } from './PatternToolbar';
 import Icon from '../shared/Icon';
 import Logo from '../shared/Logo';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 import useProjectStore from '../../store/useProjectStore';
 import { useElementSize } from '../../hooks/useElementSize';
 import { FILET_SQUARE } from '../../utils/filet';
-import { projectStatus } from '../../utils/projectStatus';
+import { projectProgress, projectStatus } from '../../utils/projectStatus';
 import type { Project } from '../../types';
 
 const WELCOMED_KEY = 'pps:welcomed';
@@ -50,6 +51,9 @@ export default function Gallery({ onOpenProject }: Props) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isYarnOpen, setIsYarnOpen] = useState(false);
   const { requestConfirm, dialogProps } = useConfirmDialog();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<StatusFilter>('all');
+  const [sort, setSort] = useState<SortOrder>('recent');
 
   const [showWelcome] = useState(() => !readWelcomed());
   const [entered, setEntered] = useState(!showWelcome);
@@ -66,6 +70,18 @@ export default function Gallery({ onOpenProject }: Props) {
     () => projects.filter(project => projectStatus(project) === 'progress').length,
     [projects]
   );
+
+  const visibleProjects = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = projects.filter(
+      project =>
+        (!q || project.name.toLowerCase().includes(q)) &&
+        (filter === 'all' || projectStatus(project) === filter)
+    );
+    if (sort === 'name') return list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === 'progress') return list.sort((a, b) => projectProgress(b) - projectProgress(a));
+    return list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }, [projects, query, filter, sort]);
 
   const handleStart = useCallback(() => {
     markWelcomed();
@@ -169,17 +185,38 @@ export default function Gallery({ onOpenProject }: Props) {
               </div>
             </div>
           ) : (
-            <ul className={styles.grid}>
-              {projects.map(project => (
-                <li key={project.id} className={styles.gridItem}>
-                  <ProjectCard
-                    project={project}
-                    onClick={() => onOpenProject(project.id)}
-                    onDelete={() => handleDeleteProject(project)}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              <PatternToolbar
+                query={query}
+                onQueryChange={setQuery}
+                filter={filter}
+                onFilterChange={setFilter}
+                sort={sort}
+                onSortChange={setSort}
+              />
+
+              {visibleProjects.length === 0 ? (
+                <div className={styles.empty}>
+                  <p className={styles.emptyText}>
+                    {query.trim()
+                      ? `No patterns match “${query.trim()}”.`
+                      : 'No patterns match this filter.'}
+                  </p>
+                </div>
+              ) : (
+                <ul className={styles.grid}>
+                  {visibleProjects.map(project => (
+                    <li key={project.id} className={styles.gridItem}>
+                      <ProjectCard
+                        project={project}
+                        onClick={() => onOpenProject(project.id)}
+                        onDelete={() => handleDeleteProject(project)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
         </div>
       </main>
