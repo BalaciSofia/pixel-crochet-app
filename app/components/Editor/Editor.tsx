@@ -79,6 +79,12 @@ function EditorContent({ project, onBack }: ContentProps) {
 
   const projectId = project.id;
 
+  const palette = project.palette;
+  useEffect(() => {
+    const current = useEditorStore.getState().color;
+    if (palette.length > 0 && !palette.includes(current)) setColor(palette[0]);
+  }, [palette, setColor]);
+
   const handleRename = useCallback(
     (name: string) => renameProject(projectId, name),
     [projectId, renameProject]

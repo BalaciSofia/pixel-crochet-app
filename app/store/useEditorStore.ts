@@ -27,7 +27,7 @@ interface EditorStore {
 const useEditorStore = create<EditorStore>((set) => ({
   mode: 'edit',
   tool: 'draw',
-  color: '#E8ACC3',
+  color: '#000000',
   zoom: 1.0,
   showGrid: true,
   hoveredCell: null,
