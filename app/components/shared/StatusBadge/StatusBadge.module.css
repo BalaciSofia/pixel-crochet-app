@@ -1,0 +1,23 @@
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font: 600 11px/1.4 var(--font-sans);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.progress {
+  background: var(--rose);
+  color: var(--white);
+}
+
+.finished {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.new {
+  background: var(--white);
+  color: var(--ink);
+}

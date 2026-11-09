@@ -1,0 +1,42 @@
+.group {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 0;
+}
+
+.strong {
+  border-color: var(--ink);
+}
+
+.group .item {
+  height: 42px;
+  padding: 0 14px;
+  gap: 7px;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  font: 500 14px var(--font-sans);
+  color: var(--ink);
+  background: var(--white);
+  white-space: nowrap;
+}
+
+.group .item:hover {
+  background: var(--blush);
+}
+
+.group .item:global(.Mui-selected),
+.group .item:global(.Mui-selected):hover {
+  background: var(--ink);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.group .dense {
+  font-size: 13px;
+}
+
+.strong .item {
+  padding: 0 16px;
+}

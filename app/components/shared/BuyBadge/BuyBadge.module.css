@@ -1,0 +1,21 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--cherry);
+  color: var(--white);
+  font: 600 11px/1.4 var(--font-sans);
+  white-space: nowrap;
+}
+
+.square {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cherry);
+  color: var(--white);
+  pointer-events: none;
+}

@@ -1,0 +1,7 @@
+.label {
+  margin: 0;
+  font: 600 11px/1.4 var(--font-sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
