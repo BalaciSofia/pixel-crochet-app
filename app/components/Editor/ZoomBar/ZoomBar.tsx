@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useSyncExternalStore } from 'react';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import styles from './ZoomBar.module.css';
 import Icon from '../../shared/Icon';
 import useEditorStore from '../../../store/useEditorStore';
+
+const subscribeNever = () => () => {};
 
 export default function ZoomBar() {
   const zoom = useEditorStore(state => state.zoom);
@@ -23,12 +25,17 @@ export default function ZoomBar() {
   }, [zoom, onZoomChange]);
 
   const handleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      document.documentElement.requestFullscreen();
-    }
+    const request = document.fullscreenElement
+      ? document.exitFullscreen?.()
+      : document.documentElement.requestFullscreen?.();
+    request?.catch(() => {});
   }, []);
+
+  const canFullscreen = useSyncExternalStore(
+    subscribeNever,
+    () => document.fullscreenEnabled === true,
+    () => false
+  );
 
   return (
     <div className={styles.container}>
@@ -65,11 +72,13 @@ export default function ZoomBar() {
         </IconButton>
       </Tooltip>
 
-      <Tooltip title="Toggle fullscreen">
-        <IconButton onClick={handleFullscreen} aria-label="Full screen" className={styles.button}>
-          <Icon name="fullscreen" />
-        </IconButton>
-      </Tooltip>
+      {canFullscreen && (
+        <Tooltip title="Toggle fullscreen">
+          <IconButton onClick={handleFullscreen} aria-label="Full screen" className={styles.button}>
+            <Icon name="fullscreen" />
+          </IconButton>
+        </Tooltip>
+      )}
     </div>
   );
 }
