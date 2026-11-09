@@ -2,6 +2,36 @@
   box-sizing: border-box;
 }
 
+:root {
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+  --font-mono-stack: var(--font-mono), ui-monospace, monospace;
+  --ease: cubic-bezier(0.7, 0, 0.2, 1);
+
+  --rose: #B24A74;
+  --rose-dark: #8F2F57;
+  --cherry: #B3243F;
+  --ink: #1E1A1C;
+  --muted: #5E5357;
+  --paper: #FBF8F6;
+  --white: #FFFFFF;
+  --line: #E4D9DD;
+  --line-soft: #F1E8EB;
+  --line-input: #D3C3C9;
+  --blush: #F3E2EA;
+  --tint: #FBF1F3;
+  --petal: #D48FAA;
+  --canvas-bg: #EFE8EB;
+  --canvas-dot: #DCCFD5;
+  --grid-line: #D7CCD1;
+  --success: #2E7D32;
+  --disabled: #B5ABAF;
+
+  --shadow-dialog: 10px 10px 0 rgba(30, 26, 28, 0.14);
+  --shadow-canvas: 8px 8px 0 rgba(30, 26, 28, 0.12);
+  --shadow-plate: 4px 4px 0 rgba(178, 74, 116, 0.1);
+  --shadow-float: 0 4px 0 rgba(30, 26, 28, 0.06);
+}
+
 html,
 body {
   height: 100%;
@@ -9,9 +39,36 @@ body {
 
 body {
   margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
 }
 
-:root {
-  --font-sans: var(--font-outfit), system-ui, sans-serif;
-  --font-mono-stack: var(--font-mono), ui-monospace, monospace;
+a {
+  color: var(--rose);
+}
+
+a:hover {
+  color: var(--rose-dark);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
+}
+
+.MuiInputBase-input:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
 }
