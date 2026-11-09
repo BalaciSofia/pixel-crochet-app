@@ -88,46 +88,50 @@
   gap: 32px;
 }
 
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.title {
-  margin: 0;
-}
-
-.title:focus {
-  outline: none;
-}
-
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.newCard {
+.gridItem {
+  display: flex;
+  min-width: 0;
+}
+
+.gridItem > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.yarnLink {
+  align-self: flex-start;
+}
+
+.empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  background: #FAFAFA;
-  border: 2px dashed #DDD;
-  cursor: pointer;
+  gap: 16px;
+  padding: 48px;
+  border: 1px dashed var(--line-input);
+  text-align: center;
 }
 
-.newIcon {
-  width: 48px;
-  height: 48px;
+.emptyTitle {
+  margin: 0;
+  font: 600 16px var(--font-sans);
+  color: var(--ink);
+}
+
+.emptyActions {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 12px;
+  gap: 10px;
 }
 
 @media (max-width: 1000px) {

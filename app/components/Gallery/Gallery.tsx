@@ -1,12 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import ButtonBase from '@mui/material/ButtonBase';
-import Typography from '@mui/material/Typography';
-import AddIcon from '@mui/icons-material/Add';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import Button from '@mui/material/Button';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
-import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import styles from './Gallery.module.css';
 import ProjectCard from './ProjectCard';
 import NewProjectModal from './NewProjectModal';
@@ -15,11 +10,14 @@ import YarnStashDialog from './YarnStashDialog';
 import FiletPanel from './FiletPanel';
 import Scatter from './FiletPanel/Scatter';
 import Welcome from './Welcome';
+import HomeHeader from './HomeHeader';
+import Icon from '../shared/Icon';
 import Logo from '../shared/Logo';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 import useProjectStore from '../../store/useProjectStore';
 import { useElementSize } from '../../hooks/useElementSize';
 import { FILET_SQUARE } from '../../utils/filet';
+import { projectStatus } from '../../utils/projectStatus';
 import type { Project } from '../../types';
 
 const WELCOMED_KEY = 'pps:welcomed';
@@ -62,6 +60,11 @@ export default function Gallery({ onOpenProject }: Props) {
   const artWidth = showWelcome || narrow ? size.width : PANEL_WIDTH;
   const artCols = Math.ceil(artWidth / FILET_SQUARE);
   const artRows = Math.ceil(size.height / FILET_SQUARE);
+
+  const inProgress = useMemo(
+    () => projects.filter(project => projectStatus(project) === 'progress').length,
+    [projects]
+  );
 
   const handleStart = useCallback(() => {
     markWelcomed();
@@ -133,54 +136,48 @@ export default function Gallery({ onOpenProject }: Props) {
 
       <main className={styles.main} inert={!entered}>
         <div className={styles.content}>
-          <header className={styles.header}>
-            <Typography
-              ref={headingRef}
-              tabIndex={-1}
-              variant="h3"
-              component="h1"
-              sx={{ fontWeight: 700 }}
-              className={styles.title}
-            >
-              My patterns
-            </Typography>
-            <Button
-              color="inherit"
-              startIcon={<PaletteOutlinedIcon />}
-              onClick={() => setIsYarnOpen(true)}
-            >
-              My yarn
-            </Button>
-          </header>
+          <HomeHeader
+            headingRef={headingRef}
+            total={projects.length}
+            inProgress={inProgress}
+            onNew={handleOpenModal}
+            onImport={handleOpenImageModal}
+          />
 
-          <div className={styles.grid}>
-            <ButtonBase className={styles.newCard} onClick={handleOpenModal}>
-              <span className={styles.newIcon}>
-                <AddIcon fontSize="large" color="primary" />
-              </span>
-              <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
-                New Pattern
-              </Typography>
-            </ButtonBase>
+          <Button color="inherit" onClick={() => setIsYarnOpen(true)} className={styles.yarnLink}>
+            My yarn
+          </Button>
 
-            <ButtonBase className={styles.newCard} onClick={handleOpenImageModal}>
-              <span className={styles.newIcon}>
-                <PhotoCameraIcon fontSize="large" color="primary" />
-              </span>
-              <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
-                Image to Pixel
-              </Typography>
-            </ButtonBase>
-
-            {projects.map(project => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onClick={() => onOpenProject(project.id)}
-                onDelete={() => handleDeleteProject(project)}
-              />
-            ))}
-          </div>
+          {projects.length === 0 ? (
+            <div className={styles.empty}>
+              <p className={styles.emptyTitle}>No patterns yet</p>
+              <div className={styles.emptyActions}>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<Icon name="image" strokeWidth={1.8} />}
+                  onClick={handleOpenImageModal}
+                >
+                  Image to pattern
+                </Button>
+                <Button variant="contained" startIcon={<Icon name="plus" />} onClick={handleOpenModal}>
+                  New pattern
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <ul className={styles.grid}>
+              {projects.map(project => (
+                <li key={project.id} className={styles.gridItem}>
+                  <ProjectCard
+                    project={project}
+                    onClick={() => onOpenProject(project.id)}
+                    onDelete={() => handleDeleteProject(project)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </main>
 
