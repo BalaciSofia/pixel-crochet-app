@@ -41,6 +41,13 @@ function recordHistory(past: HistoryEntry[], project: Project, withPalette = fal
   return { past: next, future: [] as HistoryEntry[] };
 }
 
+// Rows are worked from the bottom of the grid, so when the row count changes the
+// bottom stays put and completed row indices shift by the difference.
+function shiftCompletedRows(completedRows: number[], oldRows: number, newRows: number): number[] {
+  const offset = newRows - oldRows;
+  return completedRows.map(r => r + offset).filter(r => r >= 0 && r < newRows);
+}
+
 function restore(project: Project, entry: HistoryEntry): Project {
   return {
     ...project,
@@ -48,7 +55,7 @@ function restore(project: Project, entry: HistoryEntry): Project {
     cols: entry.cols,
     rows: entry.rows,
     palette: entry.palette ?? project.palette,
-    completedRows: (project.completedRows ?? []).filter(r => r < entry.rows),
+    completedRows: shiftCompletedRows(project.completedRows ?? [], project.rows, entry.rows),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -198,11 +205,17 @@ const useProjectStore = create<ProjectStore>()(
           const target = state.projects.find(p => p.id === id);
           if (!target) return state;
 
+          const offset = newRows - target.rows;
           const newGrid: (string | null)[][] = [];
           for (let row = 0; row < newRows; row++) {
+            const oldRow = row - offset;
             const newRow: (string | null)[] = [];
             for (let col = 0; col < newCols; col++) {
-              newRow.push(row < target.rows && col < target.cols ? target.grid[row][col] : null);
+              newRow.push(
+                oldRow >= 0 && oldRow < target.rows && col < target.cols
+                  ? target.grid[oldRow][col]
+                  : null
+              );
             }
             newGrid.push(newRow);
           }
@@ -212,14 +225,12 @@ const useProjectStore = create<ProjectStore>()(
             cols: newCols,
             rows: newRows,
             grid: newGrid,
-
-            completedRows: (target.completedRows ?? []).filter(r => r < newRows),
+            completedRows: shiftCompletedRows(target.completedRows ?? [], target.rows, newRows),
             updatedAt: new Date().toISOString(),
           };
 
           return {
             projects: state.projects.map(p => (p.id === id ? resized : p)),
-
             ...(id === state.activeProjectId ? recordHistory(state.past, target) : {}),
           };
         });
