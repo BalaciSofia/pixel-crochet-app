@@ -2,18 +2,17 @@
 
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import Button from '@mui/material/Button';
-import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import styles from './Sidebar.module.css';
-import Slider from '../../shared/Slider';
+import Icon from '../../shared/Icon';
+import BuyBadge from '../../shared/BuyBadge';
+import SectionLabel from '../../shared/SectionLabel';
+import { useYarnNames } from '../../../hooks/useYarnNames';
 import type { Project } from '../../../types';
 import { getStitchCounts } from '../../../utils/exportUtils';
+
+const MIN_SIZE = 1;
+const MAX_SIZE = 200;
 
 interface Props {
   project: Project;
@@ -24,6 +23,12 @@ interface Props {
   onRemoveColor: (color: string) => void;
 }
 
+function parseSize(value: string): number | null {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < MIN_SIZE || n > MAX_SIZE) return null;
+  return n;
+}
+
 export default function Sidebar({
   project,
   color,
@@ -32,10 +37,10 @@ export default function Sidebar({
   onAddColor,
   onRemoveColor,
 }: Props) {
-  const [pendingWidth, setPendingWidth] = useState(project.cols);
-  const [pendingHeight, setPendingHeight] = useState(project.rows);
-  const [showPalette, setShowPalette] = useState(true);
+  const [pendingWidth, setPendingWidth] = useState(String(project.cols));
+  const [pendingHeight, setPendingHeight] = useState(String(project.rows));
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const yarnNames = useYarnNames();
 
   const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
   const totalStitches = useMemo(
@@ -47,19 +52,18 @@ export default function Sidebar({
     [stitchCounts]
   );
 
-  const handleWidthChange = useCallback((value: number) => {
-    setPendingWidth(value);
-  }, []);
+  const width = parseSize(pendingWidth);
+  const height = parseSize(pendingHeight);
+  const sizeChanged =
+    width !== null && height !== null && (width !== project.cols || height !== project.rows);
 
-  const handleHeightChange = useCallback((value: number) => {
-    setPendingHeight(value);
-  }, []);
-
-  const handleApplyResize = useCallback(() => {
-    if (pendingWidth !== project.cols || pendingHeight !== project.rows) {
-      onResize(pendingWidth, pendingHeight);
-    }
-  }, [pendingWidth, pendingHeight, project.cols, project.rows, onResize]);
+  const handleResizeSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (sizeChanged && width !== null && height !== null) onResize(width, height);
+    },
+    [sizeChanged, width, height, onResize]
+  );
 
   const handleColorInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,17 +72,8 @@ export default function Sidebar({
     [onColorChange]
   );
 
-  const handlePaletteColorClick = useCallback(
-    (paletteColor: string) => {
-      onColorChange(paletteColor);
-    },
-    [onColorChange]
-  );
-
   const handleAddColorFromPicker = useCallback(() => {
-    if (colorInputRef.current) {
-      colorInputRef.current.click();
-    }
+    colorInputRef.current?.click();
   }, []);
 
   const handleNewColorChange = useCallback(
@@ -88,168 +83,169 @@ export default function Sidebar({
     [onAddColor]
   );
 
-  const handleRemoveColor = useCallback(
-    (e: React.MouseEvent, colorToRemove: string) => {
-      e.stopPropagation();
-      onRemoveColor(colorToRemove);
-    },
-    [onRemoveColor]
-  );
-
   const palette = project.palette || [];
   const toBuy = useMemo(
     () => new Set((project.toBuy ?? []).map(c => c.toUpperCase())),
     [project.toBuy]
   );
 
+  const nameOf = (hex: string) => yarnNames.get(hex.toUpperCase());
+  const currentHex = color.toUpperCase();
+
   return (
     <aside className={styles.sidebar}>
       <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Grid Size
-        </Typography>
-
-        <Slider
-          label="Width"
-          value={pendingWidth}
-          min={1}
-          max={200}
-          onChange={handleWidthChange}
-        />
-
-        <Slider
-          label="Height"
-          value={pendingHeight}
-          min={1}
-          max={200}
-          onChange={handleHeightChange}
-        />
-
-        <div className={styles.sizeDisplay}>
-          {pendingWidth} × {pendingHeight}
-        </div>
-
-        {(pendingWidth !== project.cols || pendingHeight !== project.rows) && (
-          <Button size="small" variant="contained" fullWidth onClick={handleApplyResize}>
-            Apply Size
-          </Button>
-        )}
-      </section>
-
-      <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Active Color
-        </Typography>
-
-        <div className={styles.colorSwatches}>
-          <div className={styles.swatchContainer}>
-            <label
-              className={`${styles.colorSwatch} ${styles.activeColorSwatch}`}
-              style={{ backgroundColor: color }}
-              title="Click to change color"
-            >
-              <input
-                type="color"
-                value={color}
-                onChange={handleColorInputChange}
-                className={styles.colorInput}
-              />
-            </label>
-            <span className={styles.colorLabel}>{color.toUpperCase()}</span>
+        <SectionLabel>Current color</SectionLabel>
+        <div className={styles.current}>
+          <label className={styles.currentSwatch} style={{ backgroundColor: color }}>
+            <span className={styles.visuallyHidden}>Pick a custom color</span>
+            <input
+              type="color"
+              value={color}
+              onChange={handleColorInputChange}
+              className={styles.colorInput}
+            />
+          </label>
+          <div className={styles.currentText}>
+            <span className={styles.currentName}>{nameOf(currentHex) ?? 'Custom'}</span>
+            <span className={styles.mono}>{currentHex}</span>
           </div>
         </div>
       </section>
 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
-          <Typography variant="overline" color="text.secondary" component="h3">
-            Project Palette
-          </Typography>
-          <IconButton
+          <SectionLabel>Palette · {palette.length}</SectionLabel>
+          <Button
             size="small"
-            onClick={() => setShowPalette(!showPalette)}
-            aria-label={showPalette ? 'Collapse palette' : 'Expand palette'}
+            onClick={handleAddColorFromPicker}
+            startIcon={<Icon name="plus" size={14} strokeWidth={2.4} />}
+            className={styles.addButton}
           >
-            {showPalette ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-          </IconButton>
+            Add
+          </Button>
+          <input
+            ref={colorInputRef}
+            type="color"
+            onChange={handleNewColorChange}
+            className={styles.hiddenColorInput}
+            tabIndex={-1}
+            aria-hidden="true"
+          />
         </div>
 
-        <Collapse in={showPalette}>
-          <div className={styles.palette}>
-            {palette.map(c => (
-              <div key={c} className={styles.paletteItem}>
-                <button
-                  className={`${styles.paletteColor} ${c.toUpperCase() === color.toUpperCase() ? styles.selected : ''}`}
-                  style={{ backgroundColor: c }}
-                  onClick={() => handlePaletteColorClick(c)}
-                  title={toBuy.has(c.toUpperCase()) ? `${c} (need to buy)` : c}
-                  aria-label={`Use color ${c}${toBuy.has(c.toUpperCase()) ? ', need to buy' : ''}`}
-                />
-                {toBuy.has(c.toUpperCase()) && (
-                  <span className={styles.buyBadge} aria-hidden="true">
-                    <ShoppingCartIcon className={styles.buyIcon} />
-                  </span>
-                )}
-                <IconButton
-                  size="small"
-                  className={styles.removeColorBtn}
-                  onClick={(e) => handleRemoveColor(e, c)}
-                  aria-label={`Remove color ${c}`}
-                >
-                  <CloseIcon className={styles.removeIcon} />
-                </IconButton>
-              </div>
-            ))}
-            <IconButton
-              className={styles.addColorBtn}
-              onClick={handleAddColorFromPicker}
-              aria-label="Add new color"
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
-            <input
-              ref={colorInputRef}
-              type="color"
-              onChange={handleNewColorChange}
-              className={styles.hiddenColorInput}
-            />
+        {palette.length === 0 ? (
+          <p className={styles.empty}>No colors yet. Add some!</p>
+        ) : (
+          <ul className={styles.palette}>
+            {palette.map(c => {
+              const hex = c.toUpperCase();
+              const buy = toBuy.has(hex);
+              const name = nameOf(hex);
+              const label = name ? `${name} ${hex}` : hex;
+              return (
+                <li key={c} className={styles.paletteItem}>
+                  <button
+                    type="button"
+                    className={`${styles.paletteColor} ${hex === currentHex ? styles.selected : ''}`}
+                    style={{ backgroundColor: c }}
+                    onClick={() => onColorChange(c)}
+                    aria-pressed={hex === currentHex}
+                    title={buy ? `${label} (need to buy)` : label}
+                    aria-label={`Use ${label}${buy ? ', need to buy' : ''}`}
+                  />
+                  {buy && <BuyBadge className={styles.buyBadge} />}
+                  <IconButton
+                    size="small"
+                    className={styles.removeColorBtn}
+                    onClick={() => onRemoveColor(c)}
+                    aria-label={`Remove color ${hex}`}
+                  >
+                    <Icon name="close" size={12} strokeWidth={3} />
+                  </IconButton>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {toBuy.size > 0 && (
+          <div className={styles.callout}>
+            <span className={styles.calloutIcon} aria-hidden="true">
+              <Icon name="cart" size={10} strokeWidth={3} />
+            </span>
+            <span>
+              <strong>
+                {toBuy.size} {toBuy.size === 1 ? 'color' : 'colors'} to buy.
+              </strong>{' '}
+              No close match in your yarn stash.
+            </span>
           </div>
-          {toBuy.size > 0 && (
-            <Typography variant="caption" color="text.secondary" className={styles.buyHint}>
-              Cart icon: no close match in your yarn, needs buying
-            </Typography>
-          )}
-          {palette.length === 0 && (
-            <p className={styles.emptyPalette}>No colors yet. Add some!</p>
-          )}
-        </Collapse>
+        )}
       </section>
 
       <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Stitch Count
-        </Typography>
-
-        <div className={styles.stitchList}>
-          {sortedCounts.length === 0 ? (
-            <div className={styles.emptyStitch}>No stitches yet</div>
-          ) : (
-            sortedCounts.map(([hex, count]) => (
-              <div key={hex} className={styles.stitchRow}>
-                <span className={styles.stitchSwatch} style={{ backgroundColor: hex }} />
-                <span className={styles.stitchHex}>{hex}</span>
-                <span className={styles.stitchCount}>{count}</span>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div className={styles.totalStitch}>
-          Total: <strong>{totalStitches}</strong> stitches
-        </div>
+        <SectionLabel>Canvas size</SectionLabel>
+        <form className={styles.sizeForm} onSubmit={handleResizeSubmit}>
+          <div className={styles.sizeInputs}>
+            <label className={styles.field}>
+              Width
+              <input
+                type="number"
+                min={MIN_SIZE}
+                max={MAX_SIZE}
+                value={pendingWidth}
+                onChange={e => setPendingWidth(e.target.value)}
+                className={styles.numberInput}
+              />
+            </label>
+            <label className={styles.field}>
+              Height
+              <input
+                type="number"
+                min={MIN_SIZE}
+                max={MAX_SIZE}
+                value={pendingHeight}
+                onChange={e => setPendingHeight(e.target.value)}
+                className={styles.numberInput}
+              />
+            </label>
+          </div>
+          <Button
+            type="submit"
+            variant="outlined"
+            color="inherit"
+            fullWidth
+            disabled={!sizeChanged}
+            className={styles.resizeButton}
+          >
+            Resize canvas
+          </Button>
+        </form>
       </section>
 
-
+      <section className={`${styles.section} ${styles.last}`}>
+        <SectionLabel>Stitch count</SectionLabel>
+        {sortedCounts.length === 0 ? (
+          <p className={styles.empty}>No stitches yet</p>
+        ) : (
+          <ul className={styles.stitchList}>
+            {sortedCounts.map(([hex, count]) => (
+              <li key={hex} className={styles.stitchRow}>
+                <span className={styles.stitchSwatch} style={{ backgroundColor: hex }} aria-hidden="true" />
+                <span className={styles.stitchName}>
+                  {nameOf(hex) ?? <span className={styles.mono}>{hex.toUpperCase()}</span>}
+                </span>
+                <span className={styles.stitchCount}>{count.toLocaleString('en-US')}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className={styles.total}>
+          <span>Total stitches</span>
+          <span className={styles.totalValue}>{totalStitches.toLocaleString('en-US')}</span>
+        </div>
+      </section>
     </aside>
   );
 }

@@ -1,108 +1,113 @@
 .sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: white;
-  border-right: 1px solid #E8E8E8;
-  overflow-y: auto;
-  padding: 16px;
+  width: 320px;
+  min-width: 300px;
+  max-width: 340px;
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  overflow-y: auto;
+  background: var(--white);
+  border-left: 1px solid var(--line);
 }
 
 .section {
-  padding: 14px;
-  background: #FAFAFA;
-  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--line-soft);
 }
 
-.sectionTitle {
-  display: block;
-  margin: 0 0 12px;
+.last {
+  gap: 10px;
+  border-bottom: 0;
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
 }
 
-.sizeDisplay {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #555;
-  padding: 10px;
-  background: white;
-  border-radius: 6px;
-  margin: 12px 0;
+.addButton:global(.MuiButton-root) {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 8px;
 }
 
-.colorSwatches {
+.addButton :global(.MuiButton-startIcon) {
+  margin-right: 4px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.current {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
-  margin-bottom: 8px;
 }
 
-.swatchContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.colorSwatch {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+.currentSwatch {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.2);
   cursor: pointer;
-  border: 2px solid #DDD;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.activeColorSwatch {
-  width: 56px;
-  height: 56px;
-  border: 3px solid #DDD;
-}
-
-.colorSwatch:hover {
-  transform: scale(1.05);
-  border-color: #BBB;
+.currentSwatch:focus-within {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
 }
 
 .colorInput {
-  opacity: 0;
-  width: 0;
-  height: 0;
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .hiddenColorInput {
   position: absolute;
-  opacity: 0;
   width: 0;
   height: 0;
+  opacity: 0;
   pointer-events: none;
 }
 
-.colorLabel {
-  font-size: 11px;
-  color: #666;
-  font-family: monospace;
+.currentText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.currentName {
+  font: 600 15px var(--font-sans);
+}
+
+.mono {
+  font: 400 12px var(--font-mono-stack);
+  color: var(--muted);
 }
 
 .palette {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px;
-  background: white;
-  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .paletteItem {
@@ -110,155 +115,178 @@
 }
 
 .paletteColor {
-  width: 32px;
-  height: 32px;
-  border: 2px solid transparent;
-  border-radius: 6px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
   cursor: pointer;
-  transition: all 0.1s ease;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.2);
+  transition: transform 0.12s ease;
 }
 
 .paletteColor:hover {
-  transform: scale(1.1);
+  transform: translateY(-1px);
 }
 
 .paletteColor.selected {
-  border-color: #333;
-  box-shadow: 0 0 0 2px #E8ACC3;
+  box-shadow:
+    0 0 0 2px var(--white),
+    0 0 0 4px var(--ink);
 }
 
-.removeColorBtn {
+.buyBadge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  left: -5px;
+  bottom: -5px;
+}
+
+.paletteItem .removeColorBtn {
+  position: absolute;
+  top: -7px;
+  right: -7px;
   width: 18px;
   height: 18px;
   padding: 0;
-  background: #B3243F;
-  color: white;
+  background: var(--ink);
+  color: var(--white);
   opacity: 0;
   transition: opacity 0.15s ease;
 }
 
-.removeColorBtn:hover {
-  background: #8F1B32;
-}
-
-.removeIcon {
-  font-size: 12px;
+.paletteItem .removeColorBtn:hover {
+  background: var(--cherry);
 }
 
 .paletteItem:hover .removeColorBtn,
-.removeColorBtn:focus-visible {
+.paletteItem .removeColorBtn:focus-visible {
   opacity: 1;
 }
 
 @media (hover: none) {
-  .removeColorBtn {
+  .paletteItem .removeColorBtn {
     opacity: 1;
   }
 }
 
-.addColorBtn {
-  width: 32px;
-  height: 32px;
-  border: 2px dashed #CCC;
-  border-radius: 6px;
-  background: #F8F8F8;
-  color: #999;
-}
-
-.addColorBtn:hover {
-  border-color: #D48FAA;
-  color: #D48FAA;
-  background: #FFF2F7;
-}
-
-.emptyPalette {
-  text-align: center;
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--tint);
   font-size: 12px;
-  color: #AAA;
-  margin: 8px 0 0;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.callout strong {
+  color: var(--ink);
+}
+
+.calloutIcon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cherry);
+  color: var(--white);
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.sizeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sizeInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.numberInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--white);
+  font: 500 14px var(--font-mono-stack);
+  color: var(--ink);
+}
+
+.numberInput:focus-visible {
+  outline: none;
+  border: 2px solid var(--rose);
+  padding: 0 9px;
+}
+
+.resizeButton:global(.MuiButton-root) {
+  min-height: 40px;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .stitchList {
-  max-height: 150px;
-  overflow-y: auto;
-  margin-bottom: 10px;
-}
-
-.emptyStitch {
-  text-align: center;
-  color: #AAA;
-  font-size: 13px;
-  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .stitchRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid #EEE;
-}
-
-.stitchRow:last-child {
-  border-bottom: none;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #F6F0F2;
+  font-size: 13px;
 }
 
 .stitchSwatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 16px;
+  height: 16px;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.2);
 }
 
-.stitchHex {
+.stitchName {
   flex: 1;
-  font-size: 12px;
-  font-family: monospace;
-  color: #666;
+  min-width: 0;
 }
 
 .stitchCount {
+  font: 500 13px var(--font-mono-stack);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 4px;
   font-size: 13px;
   font-weight: 600;
-  color: #333;
 }
 
-.totalStitch {
-  text-align: center;
-  font-size: 13px;
-  color: #666;
-  padding: 10px;
-  background: white;
-  border-radius: 6px;
-}
-
-.totalStitch strong {
-  color: #B3243F;
-}
-
-.buyBadge {
-  position: absolute;
-  bottom: -6px;
-  left: -6px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #B3243F;
-  color: white;
-  pointer-events: none;
-}
-
-.buyIcon {
-  font-size: 11px;
-}
-
-.buyHint {
-  display: block;
-  margin-top: 10px;
+.totalValue {
+  font: 600 13px var(--font-mono-stack);
+  color: var(--cherry);
 }

@@ -37,6 +37,7 @@
 div.drawerContent > * {
   width: 100%;
   min-width: 0;
-  border-right: none;
+  max-width: none;
+  border-left: none;
   height: 100%;
 }

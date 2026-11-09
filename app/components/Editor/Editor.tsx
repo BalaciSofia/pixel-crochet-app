@@ -191,7 +191,7 @@ function EditorContent({ project, onBack }: ContentProps) {
       />
 
       <div className={styles.main}>
-        {compact ? (
+        {compact && (
           <Drawer
             open={panelOpen}
             onClose={closePanel}
@@ -199,8 +199,6 @@ function EditorContent({ project, onBack }: ContentProps) {
           >
             <div className={styles.drawerContent}>{sidebar}</div>
           </Drawer>
-        ) : (
-          sidebar
         )}
 
         <div className={styles.canvasArea}>
@@ -213,6 +211,8 @@ function EditorContent({ project, onBack }: ContentProps) {
           <ZoomBar />
           <PositionIndicator />
         </div>
+
+        {!compact && sidebar}
       </div>
 
       <ConfirmDialog {...dialogProps} />
