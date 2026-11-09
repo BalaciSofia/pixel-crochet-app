@@ -36,7 +36,7 @@ const useEditorStore = create<EditorStore>((set) => ({
 
   setTool: (tool: Tool) => set({ tool }),
 
-  setColor: (color: string) => set({ color }),
+  setColor: (color: string) => set({ color: color.toUpperCase() }),
 
   setZoom: (zoom: number) =>
     set({ zoom: Math.max(0.25, Math.min(4.0, zoom)) }),

@@ -53,7 +53,8 @@ export function getStitchCounts(grid: (string | null)[][]): Map<string, number> 
   for (const row of grid) {
     for (const cell of row) {
       if (cell) {
-        counts.set(cell, (counts.get(cell) || 0) + 1);
+        const hex = cell.toUpperCase();
+        counts.set(hex, (counts.get(hex) || 0) + 1);
       }
     }
   }
