@@ -169,31 +169,42 @@
   }
 }
 
-.callout {
+.currentBuy {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  background: var(--tint);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 4px;
+}
+
+.buyTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: var(--cherry);
+  color: var(--white);
+  font: 600 11px/1.4 var(--font-sans);
+}
+
+.notOwned {
   font-size: 12px;
-  line-height: 1.45;
   color: var(--muted);
 }
 
-.callout strong {
-  color: var(--ink);
+.linkButton {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: 600 12px var(--font-sans);
+  color: var(--rose);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 
-.calloutIcon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  margin-top: 1px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--cherry);
-  color: var(--white);
+.linkButton:hover {
+  color: var(--ink);
 }
 
 .empty {

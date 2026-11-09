@@ -1,0 +1,70 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--tint);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.head strong {
+  color: var(--ink);
+}
+
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cherry);
+  color: var(--white);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.swatch {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.2);
+}
+
+.hex {
+  flex: 1;
+  min-width: 0;
+  font: 400 12px var(--font-mono-stack);
+  color: var(--ink);
+}
+
+.row .add:global(.MuiButton-root) {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

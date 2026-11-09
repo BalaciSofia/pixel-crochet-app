@@ -8,7 +8,6 @@ export interface Project {
   grid: (string | null)[][];
   palette: string[];
   completedRows?: number[];
-  toBuy?: string[];
   createdAt: string;
   updatedAt: string;
 }

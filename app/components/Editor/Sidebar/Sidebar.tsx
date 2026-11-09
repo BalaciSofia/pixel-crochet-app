@@ -7,7 +7,10 @@ import styles from './Sidebar.module.css';
 import Icon from '../../shared/Icon';
 import BuyBadge from '../../shared/BuyBadge';
 import SectionLabel from '../../shared/SectionLabel';
+import ToBuyList from '../../shared/ToBuyList';
 import { useYarnNames } from '../../../hooks/useYarnNames';
+import { useColorsToBuy, useOwnedColors } from '../../../hooks/useOwnedColors';
+import useYarnStore from '../../../store/useYarnStore';
 import type { Project } from '../../../types';
 import { getStitchCounts } from '../../../utils/exportUtils';
 
@@ -41,6 +44,9 @@ export default function Sidebar({
   const [pendingHeight, setPendingHeight] = useState(String(project.rows));
   const colorInputRef = useRef<HTMLInputElement>(null);
   const yarnNames = useYarnNames();
+  const owned = useOwnedColors();
+  const addYarn = useYarnStore(state => state.addYarn);
+  const toBuyList = useColorsToBuy(project);
 
   const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
   const totalStitches = useMemo(
@@ -84,13 +90,11 @@ export default function Sidebar({
   );
 
   const palette = project.palette || [];
-  const toBuy = useMemo(
-    () => new Set((project.toBuy ?? []).map(c => c.toUpperCase())),
-    [project.toBuy]
-  );
+  const toBuy = useMemo(() => new Set(toBuyList), [toBuyList]);
 
   const nameOf = (hex: string) => yarnNames.get(hex.toUpperCase());
   const currentHex = color.toUpperCase();
+  const currentOwned = owned?.has(currentHex) ?? false;
 
   return (
     <aside className={styles.sidebar}>
@@ -109,6 +113,26 @@ export default function Sidebar({
           <div className={styles.currentText}>
             <span className={styles.currentName}>{nameOf(currentHex) ?? 'Custom'}</span>
             <span className={styles.mono}>{currentHex}</span>
+            {!currentOwned && (
+              <span className={styles.currentBuy}>
+                {toBuy.has(currentHex) ? (
+                  <span className={styles.buyTag}>
+                    <Icon name="cart" size={11} strokeWidth={2.6} />
+                    Need to buy
+                  </span>
+                ) : (
+                  <span className={styles.notOwned}>Not in your yarn</span>
+                )}
+                <button
+                  type="button"
+                  className={styles.linkButton}
+                  onClick={() => addYarn(currentHex, '')}
+                  aria-label={`Already have ${currentHex}? Add it to my yarn`}
+                >
+                  Have it? Add
+                </button>
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -169,19 +193,7 @@ export default function Sidebar({
           </ul>
         )}
 
-        {toBuy.size > 0 && (
-          <div className={styles.callout}>
-            <span className={styles.calloutIcon} aria-hidden="true">
-              <Icon name="cart" size={10} strokeWidth={3} />
-            </span>
-            <span>
-              <strong>
-                {toBuy.size} {toBuy.size === 1 ? 'color' : 'colors'} to buy.
-              </strong>{' '}
-              No close match in your yarn stash.
-            </span>
-          </div>
-        )}
+        <ToBuyList colors={toBuyList} />
       </section>
 
       <section className={styles.section}>

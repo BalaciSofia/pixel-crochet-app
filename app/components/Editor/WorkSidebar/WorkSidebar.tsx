@@ -5,7 +5,10 @@ import Button from '@mui/material/Button';
 import styles from './WorkSidebar.module.css';
 import Icon from '../../shared/Icon';
 import SectionLabel from '../../shared/SectionLabel';
+import BuyBadge from '../../shared/BuyBadge';
+import ToBuyList from '../../shared/ToBuyList';
 import { useYarnNames } from '../../../hooks/useYarnNames';
+import { useColorsToBuy } from '../../../hooks/useOwnedColors';
 import type { Project } from '../../../types';
 import { getStitchCounts } from '../../../utils/exportUtils';
 
@@ -28,6 +31,8 @@ export default function WorkSidebar({
   const completedCount = completedRows.size;
   const progress = totalRows > 0 ? Math.round((completedCount / totalRows) * 100) : 0;
   const yarnNames = useYarnNames();
+  const toBuyList = useColorsToBuy(project);
+  const toBuy = useMemo(() => new Set(toBuyList), [toBuyList]);
 
   const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
   const totalStitches = useMemo(
@@ -37,6 +42,10 @@ export default function WorkSidebar({
   const sortedCounts = useMemo(
     () => Array.from(stitchCounts.entries()).sort((a, b) => b[1] - a[1]),
     [stitchCounts]
+  );
+  const usedToBuy = useMemo(
+    () => sortedCounts.map(([hex]) => hex.toUpperCase()).filter(hex => toBuy.has(hex)),
+    [sortedCounts, toBuy]
   );
 
   return (
@@ -102,6 +111,7 @@ export default function WorkSidebar({
         <ul className={styles.colorList}>
           {sortedCounts.map(([hex, count]) => {
             const name = yarnNames.get(hex.toUpperCase());
+            const buy = toBuy.has(hex.toUpperCase());
             return (
               <li key={hex} className={styles.colorRow}>
                 <span className={styles.colorSwatch} style={{ backgroundColor: hex }} aria-hidden="true" />
@@ -109,6 +119,12 @@ export default function WorkSidebar({
                   {name && <>{name} </>}
                   <span className={styles.colorHex}>{hex.toUpperCase()}</span>
                 </span>
+                {buy && (
+                  <>
+                    <BuyBadge />
+                    <span className={styles.visuallyHidden}>Need to buy</span>
+                  </>
+                )}
                 <span className={styles.colorCount}>{count.toLocaleString('en-US')}</span>
               </li>
             );
@@ -118,6 +134,7 @@ export default function WorkSidebar({
           <span>Total stitches</span>
           <span className={styles.totalValue}>{totalStitches.toLocaleString('en-US')}</span>
         </div>
+        <ToBuyList colors={usedToBuy} />
       </section>
 
       <section className={styles.resetSection}>

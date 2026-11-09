@@ -106,7 +106,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
     const img = await loadImageFromFile(imageFile);
     const imageData = getImageData(img);
 
-    const { grid, toBuy } = pixelizeImage(imageData, {
+    const { grid } = pixelizeImage(imageData, {
       targetWidth: width,
       targetHeight: height,
       maxColors,
@@ -128,7 +128,6 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
       ...project,
       grid,
       palette: Array.from(uniqueColors),
-      toBuy,
     };
 
     saveProject(updatedProject);
@@ -223,7 +222,7 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
             />
             <span id={switchLabelId} className={styles.matchText}>
               <span className={styles.matchTitle}>Match to my yarn</span>
-              <span className={styles.matchHint}>Missing colors get a cart badge</span>
+              <span className={styles.matchHint}>Colors you don’t own are marked to buy</span>
             </span>
           </div>
           <Button size="small" onClick={() => setStashOpen(true)}>

@@ -10,6 +10,7 @@ import styles from './ProjectCard.module.css';
 import Icon from '../../shared/Icon';
 import StatusBadge from '../../shared/StatusBadge';
 import BuyBadge from '../../shared/BuyBadge';
+import { useColorsToBuy } from '../../../hooks/useOwnedColors';
 import type { Project } from '../../../types';
 import { createThumbnail } from '../../../utils/exportUtils';
 import { completedCount, editedLabel, projectStatus } from '../../../utils/projectStatus';
@@ -33,7 +34,7 @@ const ProjectCard = React.memo(function ProjectCard({ project, onClick, onDelete
   const status = projectStatus(project);
   const done = completedCount(project);
   const percent = project.rows > 0 ? Math.round((done / project.rows) * 100) : 0;
-  const toBuy = project.toBuy?.length ?? 0;
+  const toBuy = useColorsToBuy(project).length;
   const colorCount = project.palette?.length ?? 0;
 
   const handleLinkClick = useCallback(
