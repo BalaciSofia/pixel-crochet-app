@@ -54,3 +54,10 @@
   background: #F9F9F9;
   border-radius: 8px;
 }
+
+.yarnRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

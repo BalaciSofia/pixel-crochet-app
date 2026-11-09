@@ -14,6 +14,16 @@ export interface PixelizeOptions {
   yarnPalette?: string[];
 }
 
+export interface PixelizeResult {
+  grid: (string | null)[][];
+  toBuy: string[];
+}
+
+const YARN_MATCH_CUTOFF = 0.7;
+const BUY_MERGE_CUTOFF = 0.65;
+const LIGHTNESS_WEIGHT = 0.5;
+const MAX_LAB_DISTANCE = 0.5;
+
 interface CellSample {
   lab: Lab;
   weight: number;
@@ -25,17 +35,18 @@ const REFINE_ITERATIONS = 6;
 export function pixelizeImage(
   imageData: ImageData,
   options: PixelizeOptions
-): (string | null)[][] {
+): PixelizeResult {
   const { targetWidth, targetHeight, maxColors, yarnPalette } = options;
 
   const labs = sampleCells(imageData, targetWidth, targetHeight);
 
   const opaque = labs.filter((lab): lab is Lab => lab !== null);
-  const palette = buildPalette(opaque, maxColors, yarnPalette);
+  const ideal = buildPalette(opaque, maxColors);
+  const { usage, dominant } = describeClusters(opaque, ideal);
+  const { colors, toBuy } = matchToYarn(ideal, dominant, usage, yarnPalette);
 
-  const cache = new Map<string, number>();
+  const cache = new Map<string, string>();
   const grid: (string | null)[][] = [];
-  const paletteHex = palette.map(oklabToHex);
 
   for (let row = 0; row < targetHeight; row++) {
     const gridRow: (string | null)[] = [];
@@ -46,17 +57,17 @@ export function pixelizeImage(
         continue;
       }
       const key = lab.join(',');
-      let index = cache.get(key);
-      if (index === undefined) {
-        index = nearestIndex(lab, palette);
-        cache.set(key, index);
+      let color = cache.get(key);
+      if (color === undefined) {
+        color = colors[nearestIndex(lab, ideal)];
+        cache.set(key, color);
       }
-      gridRow.push(paletteHex[index]);
+      gridRow.push(color);
     }
     grid.push(gridRow);
   }
 
-  return grid;
+  return { grid, toBuy };
 }
 
 function sampleCells(
@@ -110,12 +121,8 @@ function sampleCells(
   return result;
 }
 
-function buildPalette(colors: Lab[], maxColors: number | undefined, yarnPalette: string[] | undefined): Lab[] {
+function buildPalette(colors: Lab[], maxColors: number | undefined): Lab[] {
   if (colors.length === 0) return [[0, 0, 0]];
-
-  if (yarnPalette && yarnPalette.length > 0) {
-    return restrictToYarn(colors, yarnPalette.map(hexToOklab), maxColors);
-  }
 
   const samples = groupSamples(colors);
   const limit = maxColors && maxColors > 0 ? maxColors : samples.length;
@@ -124,17 +131,75 @@ function buildPalette(colors: Lab[], maxColors: number | undefined, yarnPalette:
   return refine(samples, weightedMedianCut(samples, limit));
 }
 
-function restrictToYarn(colors: Lab[], yarn: Lab[], maxColors: number | undefined): Lab[] {
-  const usage = new Array<number>(yarn.length).fill(0);
-  for (const lab of colors) usage[nearestIndex(lab, yarn)]++;
+function describeClusters(labs: Lab[], ideal: Lab[]) {
+  const usage = ideal.map(() => 0);
+  const dominant = ideal.slice();
+  const best = ideal.map(() => 0);
+  const counts = new Map<string, number>();
 
-  const used = yarn
-    .map((lab, index) => ({ lab, count: usage[index] }))
-    .filter(entry => entry.count > 0)
-    .sort((a, b) => b.count - a.count);
+  for (const lab of labs) {
+    const cluster = nearestIndex(lab, ideal);
+    usage[cluster]++;
+    const key = `${cluster}:${lab.join(',')}`;
+    const count = (counts.get(key) ?? 0) + 1;
+    counts.set(key, count);
+    if (count > best[cluster]) {
+      best[cluster] = count;
+      dominant[cluster] = lab;
+    }
+  }
 
-  const limit = maxColors && maxColors > 0 ? maxColors : used.length;
-  return used.slice(0, limit).map(entry => entry.lab);
+  return { usage, dominant };
+}
+
+function similarity(a: Lab, b: Lab): number {
+  const dl = (a[0] - b[0]) * LIGHTNESS_WEIGHT;
+  const da = a[1] - b[1];
+  const db = a[2] - b[2];
+  return 1 - Math.sqrt(dl * dl + da * da + db * db) / MAX_LAB_DISTANCE;
+}
+
+function matchToYarn(
+  ideal: Lab[],
+  dominant: Lab[],
+  usage: number[],
+  yarnPalette: string[] | undefined
+): { colors: string[]; toBuy: string[] } {
+  if (!yarnPalette || yarnPalette.length === 0) {
+    return { colors: ideal.map(oklabToHex), toBuy: [] };
+  }
+
+  const yarns = yarnPalette.map(hexToOklab);
+  const colors: string[] = new Array(ideal.length);
+  const unmatched: number[] = [];
+
+  ideal.forEach((lab, i) => {
+    const nearest = nearestBySimilarity(lab, yarns);
+    const nearestToDominant = nearestBySimilarity(dominant[i], yarns);
+    if (similarity(lab, yarns[nearest]) >= YARN_MATCH_CUTOFF) {
+      colors[i] = yarnPalette[nearest].toUpperCase();
+    } else if (similarity(dominant[i], yarns[nearestToDominant]) >= YARN_MATCH_CUTOFF) {
+      colors[i] = yarnPalette[nearestToDominant].toUpperCase();
+    } else {
+      unmatched.push(i);
+    }
+  });
+
+  unmatched.sort((a, b) => usage[b] - usage[a]);
+
+  const purchases: { lab: Lab; hex: string }[] = [];
+  for (const i of unmatched) {
+    const existing = purchases.find(p => similarity(ideal[i], p.lab) >= BUY_MERGE_CUTOFF);
+    if (existing) {
+      colors[i] = existing.hex;
+    } else {
+      const hex = oklabToHex(ideal[i]);
+      purchases.push({ lab: ideal[i], hex });
+      colors[i] = hex;
+    }
+  }
+
+  return { colors, toBuy: purchases.map(p => p.hex) };
 }
 
 function groupSamples(colors: Lab[]): CellSample[] {
@@ -225,6 +290,19 @@ function refine(samples: CellSample[], buckets: CellSample[][]): Lab[] {
   }
 
   return centers;
+}
+
+function nearestBySimilarity(lab: Lab, palette: Lab[]): number {
+  let best = 0;
+  let bestScore = -Infinity;
+  for (let i = 0; i < palette.length; i++) {
+    const score = similarity(lab, palette[i]);
+    if (score > bestScore) {
+      bestScore = score;
+      best = i;
+    }
+  }
+  return best;
 }
 
 function nearestIndex(lab: Lab, palette: Lab[]): number {

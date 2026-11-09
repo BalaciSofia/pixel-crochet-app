@@ -23,7 +23,8 @@ import {
   getImageData,
   pixelizeImage,
 } from '../../../utils/imageToPixel';
-import { YARN_PALETTE } from '../../../utils/yarnPalette';
+import YarnStashDialog from '../YarnStashDialog';
+import useYarnStore from '../../../store/useYarnStore';
 
 interface Props {
   onClose: () => void;
@@ -42,6 +43,8 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [aspectRatio, setAspectRatio] = useState(1);
   const [useYarnPalette, setUseYarnPalette] = useState(false);
+  const [stashOpen, setStashOpen] = useState(false);
+  const yarns = useYarnStore(state => state.yarns);
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -85,11 +88,11 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
     const img = await loadImageFromFile(imageFile);
     const imageData = getImageData(img);
 
-    const grid = pixelizeImage(imageData, {
+    const { grid, toBuy } = pixelizeImage(imageData, {
       targetWidth: width,
       targetHeight: height,
       maxColors,
-      yarnPalette: useYarnPalette ? YARN_PALETTE : undefined,
+      yarnPalette: useYarnPalette && yarns.length > 0 ? yarns.map(yarn => yarn.color) : undefined,
     });
 
     const uniqueColors = new Set<string>();
@@ -107,117 +110,131 @@ export default function ImageToPixelModal({ onClose, onCreated }: Props) {
       ...project,
       grid,
       palette: Array.from(uniqueColors),
+      toBuy,
     };
 
     saveProject(updatedProject);
     onCreated(updatedProject);
-  }, [imageFile, width, height, maxColors, useYarnPalette, name, createProject, saveProject, onCreated]);
+  }, [imageFile, width, height, maxColors, useYarnPalette, yarns, name, createProject, saveProject, onCreated]);
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      fullWidth
-      fullScreen={fullScreen}
-      maxWidth="sm"
-      slotProps={{ paper: { component: 'form', onSubmit: handleSubmit } }}
-    >
-      <DialogTitle>Import Image as Pattern</DialogTitle>
+    <>
+      <Dialog
+        open
+        onClose={onClose}
+        fullWidth
+        fullScreen={fullScreen}
+        maxWidth="sm"
+        slotProps={{ paper: { component: 'form', onSubmit: handleSubmit } }}
+      >
+        <DialogTitle>Import Image as Pattern</DialogTitle>
 
-      <DialogContent className={styles.content}>
-        <div className={styles.uploadArea}>
-          {previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={previewUrl} alt="Preview" className={styles.preview} />
-          ) : (
-            <ButtonBase
-              className={styles.dropzone}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <PhotoCameraIcon fontSize="large" color="primary" />
-              <Typography variant="body2" color="text.secondary">
-                Click to select an image
-              </Typography>
-            </ButtonBase>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className={styles.fileInput}
+        <DialogContent className={styles.content}>
+          <div className={styles.uploadArea}>
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewUrl} alt="Preview" className={styles.preview} />
+            ) : (
+              <ButtonBase
+                className={styles.dropzone}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <PhotoCameraIcon fontSize="large" color="primary" />
+                <Typography variant="body2" color="text.secondary">
+                  Click to select an image
+                </Typography>
+              </ButtonBase>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className={styles.fileInput}
+            />
+            {previewUrl && (
+              <Button
+                color="inherit"
+                fullWidth
+                size="small"
+                className={styles.changeButton}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Change Image
+              </Button>
+            )}
+          </div>
+
+          <TextField
+            label="Pattern Name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Enter pattern name"
+            fullWidth
           />
-          {previewUrl && (
-            <Button
-              color="inherit"
-              fullWidth
-              size="small"
-              className={styles.changeButton}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Change Image
-            </Button>
-          )}
-        </div>
 
-        <TextField
-          label="Pattern Name"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Enter pattern name"
-          fullWidth
-        />
+          <div className={styles.row}>
+            <Slider
+              label="Width"
+              value={width}
+              min={8}
+              max={200}
+              onChange={handleWidthChange}
+            />
+            <Slider
+              label="Height"
+              value={height}
+              min={8}
+              max={200}
+              onChange={handleHeightChange}
+            />
+          </div>
 
-        <div className={styles.row}>
-          <Slider
-            label="Width"
-            value={width}
-            min={8}
-            max={200}
-            onChange={handleWidthChange}
-          />
-          <Slider
-            label="Height"
-            value={height}
-            min={8}
-            max={200}
-            onChange={handleHeightChange}
-          />
-        </div>
-
-        <Typography variant="body2" color="text.secondary" className={styles.info}>
-          {width} × {height} = {width * height} stitches
-        </Typography>
-
-        <div>
-          <Slider
-            label="Max Colors"
-            value={maxColors}
-            min={2}
-            max={64}
-            onChange={handleMaxColorsChange}
-          />
-          <Typography variant="caption" color="text.disabled">
-            Reduce colors by combining similar shades
+          <Typography variant="body2" color="text.secondary" className={styles.info}>
+            {width} × {height} = {width * height} stitches
           </Typography>
-        </div>
 
-        <FormControlLabel
-          control={
-            <Switch checked={useYarnPalette} onChange={e => setUseYarnPalette(e.target.checked)} />
-          }
-          label="Match to yarn colors"
-        />
-      </DialogContent>
+          <div>
+            <Slider
+              label="Max Colors"
+              value={maxColors}
+              min={2}
+              max={64}
+              onChange={handleMaxColorsChange}
+            />
+            <Typography variant="caption" color="text.disabled">
+              Reduce colors by combining similar shades
+            </Typography>
+          </div>
 
-      <DialogActions>
-        <Button color="inherit" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button variant="contained" type="submit" disabled={!imageFile}>
-          Create Pattern
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <div className={styles.yarnRow}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={useYarnPalette && yarns.length > 0}
+                  disabled={yarns.length === 0}
+                  onChange={e => setUseYarnPalette(e.target.checked)}
+                />
+              }
+              label="Match to my yarn"
+            />
+            <Button size="small" onClick={() => setStashOpen(true)}>
+              {yarns.length === 0 ? 'Add yarn' : `Manage (${yarns.length})`}
+            </Button>
+          </div>
+        </DialogContent>
+
+        <DialogActions>
+          <Button color="inherit" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" type="submit" disabled={!imageFile}>
+            Create Pattern
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {stashOpen && <YarnStashDialog onClose={() => setStashOpen(false)} />}
+    </>
   );
 }
