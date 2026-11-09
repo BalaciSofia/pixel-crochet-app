@@ -1,42 +1,47 @@
 .container {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
+  bottom: 20px;
+  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  max-width: calc(100% - 24px);
+  gap: 2px;
+  padding: 4px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-float);
+  max-width: calc(100% - 40px);
+}
+
+.container .button {
+  width: 40px;
+  height: 40px;
+  color: var(--ink);
+}
+
+.container .pressed,
+.container .pressed:hover {
+  background: var(--blush);
+  color: var(--rose);
+}
+
+.zoomValue {
+  min-width: 52px;
+  text-align: center;
+  font: 600 13px var(--font-mono-stack);
+  color: var(--ink);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--line);
 }
 
 @media (max-width: 599px) {
   .container {
-    bottom: 10px;
-    gap: 4px;
-    padding: 4px 8px;
+    left: 12px;
+    bottom: 12px;
   }
-
-  .slider {
-    display: none;
-  }
-}
-
-.zoomValue {
-  min-width: 50px;
-  text-align: center;
-}
-
-.slider {
-  width: 100px;
-  display: flex;
-  align-items: center;
-}
-
-.gridToggle {
-  border: none;
-  padding: 5px;
 }

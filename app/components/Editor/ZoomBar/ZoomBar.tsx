@@ -1,17 +1,10 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import MuiSlider from '@mui/material/Slider';
-import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
-import AddIcon from '@mui/icons-material/Add';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import RemoveIcon from '@mui/icons-material/Remove';
 import styles from './ZoomBar.module.css';
+import Icon from '../../shared/Icon';
 import useEditorStore from '../../../store/useEditorStore';
 
 export default function ZoomBar() {
@@ -29,13 +22,6 @@ export default function ZoomBar() {
     onZoomChange(Math.max(0.25, zoom - 0.25));
   }, [zoom, onZoomChange]);
 
-  const handleSliderChange = useCallback(
-    (_event: Event, value: number | number[]) => {
-      onZoomChange(Array.isArray(value) ? value[0] : value);
-    },
-    [onZoomChange]
-  );
-
   const handleFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
       document.exitFullscreen();
@@ -48,54 +34,40 @@ export default function ZoomBar() {
     <div className={styles.container}>
       <Tooltip title="Zoom out">
         <span>
-          <IconButton size="small" onClick={handleZoomOut} disabled={zoom <= 0.25} aria-label="Zoom out">
-            <RemoveIcon fontSize="small" />
+          <IconButton onClick={handleZoomOut} disabled={zoom <= 0.25} aria-label="Zoom out" className={styles.button}>
+            <Icon name="minus" />
           </IconButton>
         </span>
       </Tooltip>
 
-      <Typography variant="body2" sx={{ fontWeight: 600 }} className={styles.zoomValue}>
+      <span className={styles.zoomValue} aria-live="polite">
         {zoomPercent}%
-      </Typography>
-
-      <div className={styles.slider}>
-        <MuiSlider
-          size="small"
-          aria-label="Zoom"
-          min={0.25}
-          max={4}
-          step={0.05}
-          value={zoom}
-          onChange={handleSliderChange}
-        />
-      </div>
+      </span>
 
       <Tooltip title="Zoom in">
         <span>
-          <IconButton size="small" onClick={handleZoomIn} disabled={zoom >= 4} aria-label="Zoom in">
-            <AddIcon fontSize="small" />
+          <IconButton onClick={handleZoomIn} disabled={zoom >= 4} aria-label="Zoom in" className={styles.button}>
+            <Icon name="plus" />
           </IconButton>
         </span>
       </Tooltip>
 
-      <Divider orientation="vertical" flexItem />
+      <span className={styles.divider} aria-hidden="true" />
 
       <Tooltip title={showGrid ? 'Hide grid' : 'Show grid'}>
-        <ToggleButton
-          value="grid"
-          size="small"
-          selected={showGrid}
-          onChange={onToggleGrid}
-          aria-label="Toggle grid"
-          className={styles.gridToggle}
+        <IconButton
+          onClick={onToggleGrid}
+          aria-label="Toggle grid lines"
+          aria-pressed={showGrid}
+          className={`${styles.button} ${showGrid ? styles.pressed : ''}`}
         >
-          <GridOnIcon fontSize="small" />
-        </ToggleButton>
+          <Icon name="grid" strokeWidth={1.8} />
+        </IconButton>
       </Tooltip>
 
       <Tooltip title="Toggle fullscreen">
-        <IconButton size="small" onClick={handleFullscreen} aria-label="Toggle fullscreen">
-          <FullscreenIcon fontSize="small" />
+        <IconButton onClick={handleFullscreen} aria-label="Full screen" className={styles.button}>
+          <Icon name="fullscreen" />
         </IconButton>
       </Tooltip>
     </div>

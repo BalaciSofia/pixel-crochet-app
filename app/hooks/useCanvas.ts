@@ -282,7 +282,7 @@ export function useCanvas({
     canvas.width = width;
     canvas.height = height;
 
-    ctx.fillStyle = '#FAFAF8';
+    ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, width, height);
 
     for (let row = 0; row < project.rows; row++) {
@@ -296,21 +296,12 @@ export function useCanvas({
     }
 
     if (showGrid) {
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
-      ctx.lineWidth = 1;
-
-      for (let row = 0; row <= project.rows; row++) {
-        ctx.beginPath();
-        ctx.moveTo(0, row * cellSize);
-        ctx.lineTo(width, row * cellSize);
-        ctx.stroke();
+      ctx.fillStyle = '#D7CCD1';
+      for (let row = 1; row < project.rows; row++) {
+        ctx.fillRect(0, Math.round(row * cellSize) - 1, width, 1);
       }
-
-      for (let col = 0; col <= project.cols; col++) {
-        ctx.beginPath();
-        ctx.moveTo(col * cellSize, 0);
-        ctx.lineTo(col * cellSize, height);
-        ctx.stroke();
+      for (let col = 1; col < project.cols; col++) {
+        ctx.fillRect(Math.round(col * cellSize) - 1, 0, 1, height);
       }
     }
   }, [canvasRef, project, cellSize, showGrid]);

@@ -1,0 +1,25 @@
+.ruler {
+  position: relative;
+  font: 500 10px/1 var(--font-mono-stack);
+  color: var(--muted);
+  user-select: none;
+}
+
+.label {
+  position: absolute;
+  white-space: nowrap;
+}
+
+.horizontal .label {
+  bottom: 2px;
+  transform: translateX(-50%);
+}
+
+.vertical {
+  margin-top: 0;
+}
+
+.vertical .label {
+  right: 2px;
+  transform: translateY(-50%);
+}

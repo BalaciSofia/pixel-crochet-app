@@ -10,7 +10,7 @@ export default function PositionIndicator() {
 
   return (
     <div className={styles.indicator}>
-      col {cell.col}, row {cell.row}
+      Col {cell.col} · Row {cell.row}
     </div>
   );
 }

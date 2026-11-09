@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import styles from './Canvas.module.css';
+import Ruler from './Ruler';
 import { useCanvas } from '../../../hooks/useCanvas';
 import useEditorStore from '../../../store/useEditorStore';
 import useProjectStore from '../../../store/useProjectStore';
@@ -22,16 +23,18 @@ const Canvas = React.memo(function Canvas({ project }: Props) {
   const showGrid = useEditorStore(state => state.showGrid);
   const setZoom = useEditorStore(state => state.setZoom);
   const setHoveredCell = useEditorStore(state => state.setHoveredCell);
+  const hoveredCell = useEditorStore(state => state.hoveredCell);
 
   const updateCells = useProjectStore(state => state.updateCells);
   const updateGrid = useProjectStore(state => state.updateGrid);
   const pushHistory = useProjectStore(state => state.pushHistory);
 
+  const rows = project.rows;
   const handleHover = useCallback(
     (cell: Cell | null) => {
-      setHoveredCell(cell ? { row: cell.row + 1, col: cell.col + 1 } : null);
+      setHoveredCell(cell ? { row: rows - cell.row, col: cell.col + 1 } : null);
     },
-    [setHoveredCell]
+    [rows, setHoveredCell]
   );
 
   const { cellSize } = useCanvas({
@@ -51,18 +54,48 @@ const Canvas = React.memo(function Canvas({ project }: Props) {
 
   useEffect(() => () => setHoveredCell(null), [setHoveredCell]);
 
+  const colLabels = useMemo(
+    () => Array.from({ length: project.cols }, (_, i) => i + 1),
+    [project.cols]
+  );
+  const rowLabels = useMemo(
+    () => Array.from({ length: project.rows }, (_, i) => project.rows - i),
+    [project.rows]
+  );
+
+  const width = Math.round(project.cols * cellSize);
+  const height = Math.round(project.rows * cellSize);
+
   return (
     <div ref={scrollRef} className={styles.container}>
       <div className={styles.wrapper}>
-        <canvas
-          ref={canvasRef}
-          className={styles.canvas}
-          width={project.cols * cellSize}
-          height={project.rows * cellSize}
-          style={{
-            cursor: tool === 'fill' ? 'crosshair' : 'default',
-          }}
-        />
+        <div className={styles.layout}>
+          <span />
+          <Ruler labels={colLabels} cellSize={cellSize} orientation="horizontal" />
+          <Ruler labels={rowLabels} cellSize={cellSize} orientation="vertical" />
+          <div className={styles.frame}>
+            <canvas
+              ref={canvasRef}
+              className={styles.canvas}
+              width={width}
+              height={height}
+              role="img"
+              aria-label={`Pattern grid, ${project.cols} by ${project.rows} stitches`}
+            />
+            {hoveredCell && (
+              <span
+                className={styles.hover}
+                aria-hidden="true"
+                style={{
+                  left: (hoveredCell.col - 1) * cellSize,
+                  top: (rows - hoveredCell.row) * cellSize,
+                  width: cellSize,
+                  height: cellSize,
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
