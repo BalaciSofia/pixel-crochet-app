@@ -9,7 +9,7 @@ import SectionLabel from '../../shared/SectionLabel';
 import BuyBadge from '../../shared/BuyBadge';
 import ToBuyList from '../../shared/ToBuyList';
 import { useYarnNames } from '../../../hooks/useYarnNames';
-import { useColorsToBuy } from '../../../hooks/useOwnedColors';
+import { useColorsToBuy, useOwnedColors } from '../../../hooks/useOwnedColors';
 import type { Project } from '../../../types';
 import { getStitchCounts } from '../../../utils/exportUtils';
 
@@ -63,6 +63,7 @@ export default function WorkSidebar({
   const progress = totalRows > 0 ? Math.round((completedCount / totalRows) * 100) : 0;
   const yarnNames = useYarnNames();
   const toBuyList = useColorsToBuy(project);
+  const owned = useOwnedColors();
   const toBuy = useMemo(() => new Set(toBuyList), [toBuyList]);
 
   const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
@@ -180,7 +181,7 @@ export default function WorkSidebar({
           autoFocus={project.cmPerStitch === undefined}
         />
         <ToBuyList colors={usedToBuy} />
-        {toBuyList.length > 0 && (
+        {toBuyList.length > 0 && owned.size > 0 && (
           <Button
             variant="outlined"
             color="neutral"

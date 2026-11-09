@@ -85,7 +85,7 @@ export default function Sidebar({
 
   const nameOf = (hex: string) => yarnNames.get(hex.toUpperCase());
   const currentHex = color.toUpperCase();
-  const currentOwned = owned?.has(currentHex) ?? false;
+  const currentOwned = owned.has(currentHex);
 
   return (
     <aside className={styles.sidebar}>
@@ -184,7 +184,7 @@ export default function Sidebar({
         )}
 
         <ToBuyList colors={toBuyList} />
-        {toBuyList.length > 0 && (
+        {toBuyList.length > 0 && owned.size > 0 && (
           <Button variant="outlined" color="neutral" size="compact" fullWidth onClick={onMatchYarn}>
             Try matching to my yarn
           </Button>

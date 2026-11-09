@@ -2,9 +2,8 @@ import type { Project } from '../types';
 
 export function colorsToBuy(
   project: Pick<Project, 'grid' | 'palette'>,
-  owned: ReadonlySet<string> | null
+  owned: ReadonlySet<string>
 ): string[] {
-  if (!owned) return [];
   const result: string[] = [];
   const seen = new Set<string>();
   const consider = (color: string | null) => {
