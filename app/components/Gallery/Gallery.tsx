@@ -58,13 +58,16 @@ export default function Gallery({ onOpenProject }: Props) {
   const [showWelcome] = useState(() => !readWelcomed());
   const [entered, setEntered] = useState(!showWelcome);
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const size = useElementSize(rootRef);
+  const panelSize = useElementSize(panelRef);
 
   const narrow = size.width > 0 && size.width <= NARROW_WIDTH;
+  const showPanel = !narrow || showWelcome;
   const artWidth = showWelcome || narrow ? size.width : PANEL_WIDTH;
   const artCols = Math.ceil(artWidth / FILET_SQUARE);
-  const artRows = Math.ceil(size.height / FILET_SQUARE);
+  const artRows = Math.ceil(panelSize.height / FILET_SQUARE);
 
   const inProgress = useMemo(
     () => projects.filter(project => projectStatus(project) === 'progress').length,
@@ -136,7 +139,13 @@ export default function Gallery({ onOpenProject }: Props) {
 
   return (
     <div ref={rootRef} className={`${styles.root} ${entered ? styles.entered : styles.welcome}`}>
-      <aside className={styles.panel} aria-label="Pixel Pattern Studio">
+      <aside
+        ref={panelRef}
+        className={`${styles.panel} ${showPanel ? '' : styles.panelGone}`}
+        aria-label="Pixel Pattern Studio"
+        aria-hidden={narrow && entered}
+        inert={narrow && entered}
+      >
         <FiletPanel cols={artCols} rows={artRows} animate={showWelcome} />
 
         {showWelcome && <Welcome visible={!entered} onStart={handleStart} />}

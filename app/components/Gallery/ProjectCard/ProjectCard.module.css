@@ -149,3 +149,38 @@
 .deleteItem {
   color: var(--cherry);
 }
+
+@media (max-width: 640px) {
+  .preview {
+    padding: 12px;
+  }
+
+  .status {
+    top: 6px;
+    left: 6px;
+  }
+
+  .buy {
+    top: 6px;
+    right: 6px;
+  }
+
+  .body {
+    gap: 8px;
+    padding: 10px 10px 12px 12px;
+  }
+
+  .name {
+    font-size: 14px;
+  }
+
+  .meta,
+  .progressText,
+  .edited {
+    font-size: 11px;
+  }
+
+  .edited {
+    padding-top: 8px;
+  }
+}
