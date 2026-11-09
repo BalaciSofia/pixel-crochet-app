@@ -1,28 +1,46 @@
 .card {
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  transition: border-color 0.15s ease;
 }
 
 .card:hover {
-  border-color: #DDD;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  border-color: var(--rose);
+}
+
+.link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .preview {
-  aspect-ratio: 4/3;
-  background: #FAFAF8;
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  background: var(--tint);
+  border-bottom: 1px solid var(--line);
+}
+
+.thumbBox {
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  transition: transform 0.25s ease;
+}
+
+.card:hover .thumbBox {
+  transform: scale(1.03);
 }
 
 .thumbnail {
-  max-width: 100%;
-  max-height: 100%;
+  display: block;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -30,34 +48,104 @@
 .placeholder {
   width: 60%;
   height: 60%;
-  background: linear-gradient(135deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
-  border-radius: 4px;
+  background: var(--line-soft);
 }
 
-.menuButton {
+.status {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  opacity: 0;
-  transition: opacity 0.15s ease;
+  top: 10px;
+  left: 10px;
 }
 
-.card:hover .menuButton,
-.menuButton:focus-visible {
-  opacity: 1;
+.buy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
-.menuButton:hover {
-  background: white;
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
 }
 
-@media (hover: none) {
-  .menuButton {
-    opacity: 1;
-  }
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.titles {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.name {
+  margin: 0;
+  font: 600 16px/1.3 var(--font-sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.card .menuButton {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  margin: -4px -8px 0 0;
+  padding: 0;
+  color: var(--muted);
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.track {
+  height: 6px;
+  background: var(--line-soft);
+}
+
+.bar {
+  height: 100%;
+  background: var(--rose);
+}
+
+.barDone {
+  background: var(--ink);
+}
+
+.progressText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.percent {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.edited {
+  padding-top: 10px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .deleteItem {
-  color: #B3243F;
+  color: var(--cherry);
 }
