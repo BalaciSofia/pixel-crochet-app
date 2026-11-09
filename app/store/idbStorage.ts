@@ -14,6 +14,7 @@ function createIdbStorage(): IdbStorage {
   const pending = new Map<string, string>();
   const listeners = new Set<() => void>();
   let saving = false;
+  let writing = 0;
 
   const setSaving = (value: boolean) => {
     if (saving === value) return;
@@ -28,6 +29,7 @@ function createIdbStorage(): IdbStorage {
     }
     const entries = Array.from(pending.entries());
     pending.clear();
+    writing++;
     for (const [name, value] of entries) {
       try {
         await set(name, value);
@@ -35,7 +37,8 @@ function createIdbStorage(): IdbStorage {
         console.error(`Could not save ${name}`, error);
       }
     }
-    if (pending.size === 0 && timer === undefined) setSaving(false);
+    writing--;
+    if (writing === 0 && pending.size === 0 && timer === undefined) setSaving(false);
   };
 
   if (typeof window !== 'undefined') {
