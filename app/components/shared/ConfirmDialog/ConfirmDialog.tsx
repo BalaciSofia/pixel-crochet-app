@@ -3,10 +3,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import styles from './ConfirmDialog.module.css';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -34,17 +31,26 @@ export default function ConfirmDialog({
     <Dialog
       open={open}
       onClose={onCancel}
-      fullWidth
-      maxWidth="xs"
+      maxWidth={false}
+      role="alertdialog"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
+      slotProps={{
+        paper: {
+          className: `${styles.paper} ${destructive ? styles.destructive : ''}`,
+        },
+      }}
     >
-      <DialogTitle id="confirm-dialog-title">{title}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="confirm-dialog-message">{message}</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button color="inherit" onClick={onCancel} autoFocus={destructive}>
+      <div className={styles.body}>
+        <h2 id="confirm-dialog-title" className={styles.title}>
+          {title}
+        </h2>
+        <p id="confirm-dialog-message" className={styles.message}>
+          {message}
+        </p>
+      </div>
+      <div className={styles.actions}>
+        <Button variant="outlined" color="inherit" onClick={onCancel} autoFocus={destructive}>
           {cancelLabel}
         </Button>
         <Button
@@ -55,7 +61,7 @@ export default function ConfirmDialog({
         >
           {confirmLabel}
         </Button>
-      </DialogActions>
+      </div>
     </Dialog>
   );
 }

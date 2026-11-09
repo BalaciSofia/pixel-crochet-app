@@ -23,7 +23,7 @@ export function useUndoRedoShortcuts({ enabled, onUndo, onRedo }: Options) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
       if (isTypingTarget(e.target)) return;
-      if (document.querySelector('[role="dialog"]')) return;
+      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
 
       const key = e.key.toLowerCase();
       if (key === 'z' && !e.shiftKey) {

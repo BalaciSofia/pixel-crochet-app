@@ -124,8 +124,8 @@ export default function Gallery({ onOpenProject }: Props) {
   const handleDeleteProject = useCallback(
     (project: Project) => {
       requestConfirm({
-        title: 'Delete project?',
-        message: `"${project.name}" will be permanently deleted. This cannot be undone.`,
+        title: 'Delete pattern?',
+        message: `“${project.name}” will be permanently deleted. This cannot be undone.`,
         confirmLabel: 'Delete',
         destructive: true,
         onConfirm: () => deleteProject(project.id),

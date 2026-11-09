@@ -99,7 +99,10 @@ function EditorContent({ project, onBack }: ContentProps) {
     (newWidth: number, newHeight: number) => {
       requestConfirm({
         title: 'Resize canvas?',
-        message: `Resize from ${project.cols}×${project.rows} to ${newWidth}×${newHeight}? Pixels outside the new size are removed if the canvas gets smaller.`,
+        message:
+          newWidth < project.cols || newHeight < project.rows
+            ? `Going from ${project.cols} × ${project.rows} to ${newWidth} × ${newHeight} removes stitches outside the new size. You can undo this.`
+            : `Going from ${project.cols} × ${project.rows} to ${newWidth} × ${newHeight} adds empty stitches. You can undo this.`,
         confirmLabel: 'Resize',
         onConfirm: () => resizeProject(projectId, newWidth, newHeight),
       });
@@ -109,7 +112,7 @@ function EditorContent({ project, onBack }: ContentProps) {
 
   const handleClearCanvas = useCallback(() => {
     requestConfirm({
-      title: 'Clear the canvas?',
+      title: 'Clear canvas?',
       message: 'This erases every pixel on the canvas. You can bring it back with Undo.',
       confirmLabel: 'Clear',
       destructive: true,

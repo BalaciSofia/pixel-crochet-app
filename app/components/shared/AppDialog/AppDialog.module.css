@@ -1,0 +1,51 @@
+.paper {
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 0 24px;
+}
+
+.title {
+  margin: 0;
+  font: 700 22px/1.25 var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.header .close {
+  width: 40px;
+  height: 40px;
+  color: var(--muted);
+}
+
+.intro {
+  margin: 8px 24px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+  padding: 16px 24px 24px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.footer :global(.MuiButton-outlinedInherit) {
+  border-color: var(--line-input);
+}

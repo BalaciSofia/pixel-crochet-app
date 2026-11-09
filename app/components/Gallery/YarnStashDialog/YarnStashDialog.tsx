@@ -2,17 +2,10 @@
 
 import React, { useCallback, useState } from 'react';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import styles from './YarnStashDialog.module.css';
+import AppDialog from '../../shared/AppDialog';
+import Icon from '../../shared/Icon';
 import useYarnStore from '../../../store/useYarnStore';
 
 interface Props {
@@ -25,97 +18,93 @@ export default function YarnStashDialog({ onClose }: Props) {
   const renameYarn = useYarnStore(state => state.renameYarn);
   const removeYarn = useYarnStore(state => state.removeYarn);
 
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-
   const [color, setColor] = useState('#B24A74');
   const [name, setName] = useState('');
-  const [duplicate, setDuplicate] = useState(false);
+  const [duplicate, setDuplicate] = useState<string | null>(null);
 
   const handleAdd = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
       const added = addYarn(color, name);
-      setDuplicate(!added);
+      setDuplicate(added ? null : color.toUpperCase());
       if (added) setName('');
     },
     [addYarn, color, name]
   );
 
   return (
-    <Dialog open onClose={onClose} fullWidth maxWidth="xs" fullScreen={fullScreen}>
-      <DialogTitle>My yarn</DialogTitle>
-
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Add the colors you own. Imported images can be matched to them.
-        </Typography>
-
-        <div className={styles.list}>
-          {yarns.length === 0 && (
-            <Typography variant="body2" color="text.disabled">
-              No yarn added yet.
-            </Typography>
-          )}
+    <AppDialog
+      onClose={onClose}
+      title="My yarn"
+      width={420}
+      intro="The colors you own. New patterns start with them, and imports can match to them."
+      actions={
+        <Button variant="outlined" color="inherit" onClick={onClose} className={styles.done}>
+          Done
+        </Button>
+      }
+    >
+      {yarns.length === 0 ? (
+        <p className={styles.empty}>No yarn added yet.</p>
+      ) : (
+        <ul className={styles.list}>
           {yarns.map(yarn => (
-            <div key={yarn.id} className={styles.row}>
-              <span className={styles.swatch} style={{ background: yarn.color }} />
-              <TextField
-                size="small"
-                fullWidth
+            <li key={yarn.id} className={styles.row}>
+              <span className={styles.swatch} style={{ background: yarn.color }} aria-hidden="true" />
+              <input
+                className={styles.nameInput}
                 placeholder="Name (optional)"
                 value={yarn.name}
                 onChange={e => renameYarn(yarn.id, e.target.value)}
-                slotProps={{ htmlInput: { 'aria-label': `Name for ${yarn.color}` } }}
+                aria-label={`Name for ${yarn.color}`}
               />
-              <Typography variant="caption" className={styles.hex}>
-                {yarn.color}
-              </Typography>
+              <span className={styles.hex}>{yarn.color}</span>
               <IconButton
-                size="small"
-                color="secondary"
                 aria-label={`Remove ${yarn.name || yarn.color}`}
                 onClick={() => removeYarn(yarn.id)}
+                className={styles.remove}
               >
-                <DeleteOutlinedIcon fontSize="small" />
+                <Icon name="close" size={16} />
               </IconButton>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
+      )}
 
-        <form className={styles.addRow} onSubmit={handleAdd}>
+      <form className={styles.addBox} onSubmit={handleAdd}>
+        <span className={styles.addTitle}>Add yarn</span>
+        <div className={styles.addRow}>
+          <label className={styles.colorPick} style={{ background: color }}>
+            <span className={styles.visuallyHidden}>Yarn color</span>
+            <input
+              type="color"
+              className={styles.colorInput}
+              value={color}
+              onChange={e => {
+                setColor(e.target.value);
+                setDuplicate(null);
+              }}
+            />
+          </label>
           <input
-            type="color"
-            className={styles.colorInput}
-            value={color}
-            onChange={e => {
-              setColor(e.target.value);
-              setDuplicate(false);
-            }}
-            aria-label="Yarn color"
-          />
-          <TextField
-            size="small"
-            fullWidth
+            className={styles.newName}
             placeholder="Name (optional)"
             value={name}
             onChange={e => setName(e.target.value)}
-            error={duplicate}
-            helperText={duplicate ? 'You already have this color' : undefined}
-            slotProps={{ htmlInput: { 'aria-label': 'New yarn name' } }}
+            aria-label="Name, optional"
           />
           <Button type="submit" variant="contained">
             Add
           </Button>
-        </form>
-      </DialogContent>
-
-      <DialogActions>
-        <Button color="inherit" onClick={onClose}>
-          Done
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </div>
+        {duplicate && (
+          <span role="alert" className={styles.error}>
+            <Icon name="warning" size={14} strokeWidth={2.4} />
+            {duplicate} is already in your yarn.
+          </span>
+        )}
+      </form>
+    </AppDialog>
   );
 }

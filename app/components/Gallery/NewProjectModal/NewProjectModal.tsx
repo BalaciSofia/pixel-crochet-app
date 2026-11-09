@@ -2,15 +2,12 @@
 
 import React, { useState, useCallback } from 'react';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
 import styles from './NewProjectModal.module.css';
+import AppDialog from '../../shared/AppDialog';
+import Field, { FieldInput } from '../../shared/Field';
 import useProjectStore from '../../../store/useProjectStore';
-import type { Project } from '../../../types';
+import useYarnStore from '../../../store/useYarnStore';
+import { DEFAULT_PALETTE, type Project } from '../../../types';
 
 interface Props {
   onClose: () => void;
@@ -19,9 +16,12 @@ interface Props {
 
 export default function NewProjectModal({ onClose, onCreated }: Props) {
   const createProject = useProjectStore(state => state.createProject);
+  const yarns = useYarnStore(state => state.yarns);
   const [name, setName] = useState('Untitled Pattern');
   const [width, setWidth] = useState(32);
   const [height, setHeight] = useState(24);
+
+  const startingColors = yarns.length > 0 ? yarns.map(yarn => yarn.color) : DEFAULT_PALETTE;
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -35,55 +35,78 @@ export default function NewProjectModal({ onClose, onCreated }: Props) {
   );
 
   return (
-    <Dialog
-      open
+    <AppDialog
       onClose={onClose}
-      fullWidth
-      maxWidth="xs"
-      slotProps={{ paper: { component: 'form', onSubmit: handleSubmit } }}
+      title="New pattern"
+      width={400}
+      onSubmit={handleSubmit}
+      actions={
+        <>
+          <Button variant="outlined" color="inherit" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" type="submit">
+            Create pattern
+          </Button>
+        </>
+      }
     >
-      <DialogTitle>Create New Pattern</DialogTitle>
-
-      <DialogContent className={styles.content}>
-        <TextField
-          label="Pattern Name"
+      <Field label="Pattern name">
+        <FieldInput
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="Enter pattern name"
           autoFocus
-          fullWidth
         />
+      </Field>
 
-        <div className={styles.row}>
-          <TextField
-            label="Width (pixels)"
+      <div className={styles.row}>
+        <Field label="Width">
+          <FieldInput
             type="number"
+            mono
+            suffix="sts"
             value={width}
+            min={1}
+            max={200}
             onChange={e => setWidth(Number(e.target.value))}
-            slotProps={{ htmlInput: { min: 1, max: 200 } }}
           />
-          <TextField
-            label="Height (pixels)"
+        </Field>
+        <Field label="Height">
+          <FieldInput
             type="number"
+            mono
+            suffix="rows"
             value={height}
+            min={1}
+            max={200}
             onChange={e => setHeight(Number(e.target.value))}
-            slotProps={{ htmlInput: { min: 1, max: 200 } }}
           />
+        </Field>
+      </div>
+
+      <div className={styles.summary}>
+        <span className={styles.summaryLabel}>Total</span>
+        <span className={styles.summaryValue}>
+          {width} × {height} = {(width * height).toLocaleString('en-US')} stitches
+        </span>
+      </div>
+
+      <div className={styles.palette}>
+        <span className={styles.paletteLabel}>Starting palette</span>
+        <div className={styles.paletteRow}>
+          <div className={styles.swatches} aria-hidden="true">
+            {startingColors.map(color => (
+              <span key={color} className={styles.swatch} style={{ background: color }} />
+            ))}
+          </div>
+          <span className={styles.paletteNote}>
+            {yarns.length > 0
+              ? `Your ${yarns.length} yarn ${yarns.length === 1 ? 'color' : 'colors'}`
+              : 'Basic colors'}
+          </span>
         </div>
-
-        <Typography variant="body2" color="text.secondary" className={styles.preview}>
-          {width} x {height} = {width * height} stitches
-        </Typography>
-      </DialogContent>
-
-      <DialogActions>
-        <Button color="inherit" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button variant="contained" type="submit">
-          Create Pattern
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </AppDialog>
   );
 }

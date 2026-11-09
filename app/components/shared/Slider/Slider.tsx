@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useId } from 'react';
 import MuiSlider from '@mui/material/Slider';
-import Typography from '@mui/material/Typography';
 import styles from './Slider.module.css';
 
 interface Props {
@@ -14,6 +13,7 @@ interface Props {
   onChange: (value: number) => void;
   showValue?: boolean;
   valueFormatter?: (value: number) => string;
+  help?: string;
 }
 
 const Slider = React.memo(function Slider({
@@ -25,7 +25,9 @@ const Slider = React.memo(function Slider({
   onChange,
   showValue = true,
   valueFormatter,
+  help,
 }: Props) {
+  const labelId = useId();
   const handleChange = useCallback(
     (_event: Event, newValue: number | number[]) => {
       onChange(Array.isArray(newValue) ? newValue[0] : newValue);
@@ -38,24 +40,22 @@ const Slider = React.memo(function Slider({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <Typography variant="body2" color="text.secondary">
+        <span id={labelId} className={styles.label}>
           {label}
-        </Typography>
-        {showValue && (
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {displayValue}
-          </Typography>
-        )}
+        </span>
+        {showValue && <span className={styles.value}>{displayValue}</span>}
       </div>
       <MuiSlider
         size="small"
-        aria-label={label}
+        aria-labelledby={labelId}
         min={min}
         max={max}
         step={step}
         value={value}
         onChange={handleChange}
+        className={styles.slider}
       />
+      {help && <span className={styles.help}>{help}</span>}
     </div>
   );
 });
