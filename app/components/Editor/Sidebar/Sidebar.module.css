@@ -29,16 +29,6 @@
   justify-content: space-between;
 }
 
-.addButton:global(.MuiButton-root) {
-  min-height: 32px;
-  height: 32px;
-  padding: 0 8px;
-}
-
-.addButton :global(.MuiButton-startIcon) {
-  margin-right: 4px;
-}
-
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -250,15 +240,3 @@
   padding: 0 9px;
 }
 
-.resizeButton:global(.MuiButton-root) {
-  min-height: 40px;
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.matchButton:global(.MuiButton-root) {
-  min-height: 40px;
-  font-weight: 600;
-  font-size: 13px;
-  border-color: var(--line-input);
-}

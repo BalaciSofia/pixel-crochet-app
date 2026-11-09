@@ -60,11 +60,3 @@
   color: var(--ink);
 }
 
-.row .add:global(.MuiButton-root) {
-  min-height: 28px;
-  height: 28px;
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}

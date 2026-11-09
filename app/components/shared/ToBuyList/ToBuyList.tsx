@@ -34,9 +34,8 @@ export default function ToBuyList({ colors }: Props) {
             <span className={styles.swatch} style={{ background: hex }} aria-hidden="true" />
             <span className={styles.hex}>{hex}</span>
             <Button
-              size="small"
+              size="tiny"
               onClick={() => addYarn(hex, '')}
-              className={styles.add}
               aria-label={`Already have ${hex}? Add it to my yarn`}
             >
               Have it? Add

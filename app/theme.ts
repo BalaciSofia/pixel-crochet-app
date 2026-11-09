@@ -3,6 +3,25 @@
 import { createTheme } from '@mui/material/styles';
 import { tokens } from './tokens';
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    neutral: Palette['primary'];
+  }
+  interface PaletteOptions {
+    neutral?: PaletteOptions['primary'];
+  }
+}
+
+declare module '@mui/material/Button' {
+  interface ButtonPropsColorOverrides {
+    neutral: true;
+  }
+  interface ButtonPropsSizeOverrides {
+    compact: true;
+    tiny: true;
+  }
+}
+
 export const theme = createTheme({
   palette: {
     primary: {
@@ -15,6 +34,10 @@ export const theme = createTheme({
       main: tokens.cherry,
       light: '#D4546B',
       dark: tokens.cherryDark,
+      contrastText: tokens.white,
+    },
+    neutral: {
+      main: tokens.ink,
       contrastText: tokens.white,
     },
     error: {
@@ -166,6 +189,37 @@ export const theme = createTheme({
           props: { variant: 'text', color: 'inherit' },
           style: { fontWeight: 500 },
         },
+        {
+          props: { variant: 'outlined', color: 'neutral' },
+          style: {
+            borderColor: tokens.lineInput,
+            color: tokens.ink,
+            '&:hover': { borderColor: tokens.lineInput },
+          },
+        },
+        {
+          props: { variant: 'outlined', color: 'secondary' },
+          style: {
+            fontWeight: 600,
+            borderColor: tokens.cherry,
+            '&:hover': { borderColor: tokens.cherry, backgroundColor: tokens.tint },
+          },
+        },
+        {
+          props: { size: 'compact' },
+          style: { minHeight: 40, padding: '0 14px', fontSize: 13, fontWeight: 600 },
+        },
+        {
+          props: { size: 'tiny' },
+          style: {
+            minHeight: 32,
+            height: 32,
+            padding: '0 10px',
+            fontSize: 12,
+            fontWeight: 600,
+            '& .MuiButton-startIcon': { marginRight: 4 },
+          },
+        },
       ],
     },
     MuiIconButton: {
@@ -227,6 +281,28 @@ export const theme = createTheme({
           borderRadius: 0,
           backgroundColor: '#C9BCC2',
           opacity: 1,
+        },
+      },
+    },
+    MuiSlider: {
+      styleOverrides: {
+        root: { padding: '13px 0' },
+        thumb: { width: 14, height: 14, borderRadius: 0 },
+        rail: { borderRadius: 0 },
+        track: { borderRadius: 0 },
+      },
+    },
+    MuiSnackbarContent: {
+      styleOverrides: {
+        root: {
+          minWidth: 0,
+          padding: '4px 16px',
+          borderRadius: 0,
+          backgroundColor: tokens.ink,
+          color: tokens.white,
+          fontSize: 13,
+          fontWeight: 500,
+          boxShadow: tokens.shadowFloat,
         },
       },
     },

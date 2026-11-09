@@ -117,7 +117,6 @@
 .toolbar .export {
   height: 44px;
   padding: 0 14px;
-  border-color: var(--line);
 }
 
 .compact {
@@ -174,11 +173,5 @@
   .compact .iconButton {
     width: 40px;
     height: 40px;
-  }
-
-  .toolbar .toolGroup :global(.MuiToggleButton-root),
-  .toolbar .modeGroup :global(.MuiToggleButton-root) {
-    height: 38px;
-    padding: 0 11px;
   }
 }

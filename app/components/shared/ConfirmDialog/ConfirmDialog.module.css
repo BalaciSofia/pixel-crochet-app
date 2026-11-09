@@ -35,6 +35,3 @@
   padding: 16px 24px 24px;
 }
 
-.actions :global(.MuiButton-outlinedInherit) {
-  border-color: var(--line-input);
-}

@@ -280,7 +280,6 @@ function EditorContent({ project, onBack }: ContentProps) {
         autoHideDuration={2500}
         onClose={() => setRowMessage(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        slotProps={{ content: { className: styles.toast } }}
       />
 
       <ConfirmDialog {...dialogProps} />

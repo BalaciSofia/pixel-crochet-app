@@ -202,25 +202,8 @@
   color: var(--muted);
 }
 
-.matchButton:global(.MuiButton-root) {
-  min-height: 40px;
-  font-weight: 600;
-  font-size: 13px;
-  border-color: var(--line-input);
-}
-
 .resetSection {
   padding: 16px 20px 24px;
-}
-
-.reset:global(.MuiButton-root) {
-  font-weight: 600;
-  background: var(--white);
-  border-color: var(--cherry);
-}
-
-.reset:global(.MuiButton-root):hover {
-  background: var(--tint);
 }
 
 .visuallyHidden {

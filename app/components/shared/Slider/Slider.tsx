@@ -53,7 +53,6 @@ const Slider = React.memo(function Slider({
         step={step}
         value={value}
         onChange={handleChange}
-        className={styles.slider}
       />
       {help && <span className={styles.help}>{help}</span>}
     </div>

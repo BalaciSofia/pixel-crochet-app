@@ -4,6 +4,8 @@ import React, { useCallback, useState } from 'react';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import styles from './Toolbar.module.css';
 import Icon from '../../shared/Icon';
 import Segmented, { type SegmentedOption } from '../../shared/Segmented';
@@ -66,6 +68,8 @@ export default function Toolbar({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
   const saving = useSaveStatus();
+  const theme = useTheme();
+  const phone = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleNameClick = useCallback(() => {
     setEditedName(projectName);
@@ -122,6 +126,7 @@ export default function Toolbar({
             value={tool}
             onChange={onToolChange}
             ariaLabel="Drawing tool"
+            small={phone}
             className={styles.toolGroup}
           />
           <div className={styles.history}>
@@ -211,7 +216,7 @@ export default function Toolbar({
       {!compact && (
         <Button
           variant="outlined"
-          color="inherit"
+          color="neutral"
           onClick={onExportPDF}
           startIcon={<Icon name="download" />}
           className={styles.export}
@@ -236,6 +241,7 @@ export default function Toolbar({
         onChange={handleModeChange}
         ariaLabel="Mode"
         strong
+        small={phone}
         className={styles.modeGroup}
       />
 

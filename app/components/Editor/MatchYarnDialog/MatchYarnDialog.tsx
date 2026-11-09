@@ -60,7 +60,7 @@ export default function MatchYarnDialog({ colors, onClose, onApply }: Props) {
               Accept all
             </Button>
           )}
-          <Button variant="outlined" color="inherit" onClick={onClose}>
+          <Button variant="outlined" color="neutral" onClick={onClose}>
             Cancel
           </Button>
           <Button variant="contained" onClick={apply} disabled={accepted.length === 0}>
@@ -92,18 +92,17 @@ export default function MatchYarnDialog({ colors, onClose, onApply }: Props) {
                   </span>
                   <span className={styles.buttons}>
                     <Button
-                      size="small"
+                      size="tiny"
                       variant={choice === 'rejected' ? 'contained' : 'outlined'}
-                      color="inherit"
+                      color="neutral"
                       aria-pressed={choice === 'rejected'}
                       aria-label={`Reject ${yarnLabel(match)} for ${hex}`}
                       onClick={() => choose(hex, 'rejected')}
-                      className={styles.reject}
                     >
                       Reject
                     </Button>
                     <Button
-                      size="small"
+                      size="tiny"
                       variant={choice === 'accepted' ? 'contained' : 'outlined'}
                       aria-pressed={choice === 'accepted'}
                       aria-label={`Accept ${yarnLabel(match)} for ${hex}`}

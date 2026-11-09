@@ -42,12 +42,3 @@ div.drawerContent > * {
   height: 100%;
 }
 
-.toast:global(.MuiSnackbarContent-root) {
-  min-width: 0;
-  padding: 4px 16px;
-  border-radius: 0;
-  background: var(--ink);
-  color: var(--white);
-  font: 500 13px var(--font-sans);
-  box-shadow: var(--shadow-float);
-}

@@ -46,6 +46,3 @@
   border-top: 1px solid var(--line-soft);
 }
 
-.footer :global(.MuiButton-outlinedInherit) {
-  border-color: var(--line-input);
-}

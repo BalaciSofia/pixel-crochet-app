@@ -42,7 +42,7 @@ export default function NewProjectModal({ onClose, onCreated }: Props) {
       onSubmit={handleSubmit}
       actions={
         <>
-          <Button variant="outlined" color="inherit" onClick={onClose}>
+          <Button variant="outlined" color="neutral" onClick={onClose}>
             Cancel
           </Button>
           <Button variant="contained" type="submit">

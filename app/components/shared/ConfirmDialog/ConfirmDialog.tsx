@@ -50,7 +50,7 @@ export default function ConfirmDialog({
         </p>
       </div>
       <div className={styles.actions}>
-        <Button variant="outlined" color="inherit" onClick={onCancel} autoFocus={destructive}>
+        <Button variant="outlined" color="neutral" onClick={onCancel} autoFocus={destructive}>
           {cancelLabel}
         </Button>
         <Button

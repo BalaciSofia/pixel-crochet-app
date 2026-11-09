@@ -183,10 +183,10 @@ export default function WorkSidebar({
         {toBuyList.length > 0 && (
           <Button
             variant="outlined"
-            color="inherit"
+            color="neutral"
+            size="compact"
             fullWidth
             onClick={onMatchYarn}
-            className={styles.matchButton}
           >
             Try matching to my yarn
           </Button>
@@ -200,7 +200,6 @@ export default function WorkSidebar({
           fullWidth
           startIcon={<Icon name="reset" size={16} strokeWidth={2.2} />}
           onClick={onResetProgress}
-          className={styles.reset}
         >
           Reset progress
         </Button>

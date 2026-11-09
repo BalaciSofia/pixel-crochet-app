@@ -136,8 +136,7 @@
   color: var(--cherry);
 }
 
-.done.done:global(.MuiButton-root) {
-  border-color: var(--ink);
+.done {
   font-weight: 600;
   padding: 0 22px;
 }

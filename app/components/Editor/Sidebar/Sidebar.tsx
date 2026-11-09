@@ -132,10 +132,9 @@ export default function Sidebar({
         <div className={styles.sectionHeader}>
           <SectionLabel>Palette · {palette.length}</SectionLabel>
           <Button
-            size="small"
+            size="tiny"
             onClick={handleAddColorFromPicker}
             startIcon={<Icon name="plus" size={14} strokeWidth={2.4} />}
-            className={styles.addButton}
           >
             Add
           </Button>
@@ -186,7 +185,7 @@ export default function Sidebar({
 
         <ToBuyList colors={toBuyList} />
         {toBuyList.length > 0 && (
-          <Button variant="outlined" color="inherit" fullWidth onClick={onMatchYarn} className={styles.matchButton}>
+          <Button variant="outlined" color="neutral" size="compact" fullWidth onClick={onMatchYarn}>
             Try matching to my yarn
           </Button>
         )}
@@ -223,9 +222,9 @@ export default function Sidebar({
             type="submit"
             variant="outlined"
             color="inherit"
+            size="compact"
             fullWidth
             disabled={!sizeChanged}
-            className={styles.resizeButton}
           >
             Resize canvas
           </Button>

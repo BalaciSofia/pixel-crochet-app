@@ -22,21 +22,6 @@
   color: var(--ink);
 }
 
-.slider:global(.MuiSlider-root) {
-  padding: 13px 0;
-}
-
-.slider :global(.MuiSlider-thumb) {
-  border-radius: 0;
-  width: 14px;
-  height: 14px;
-}
-
-.slider :global(.MuiSlider-rail),
-.slider :global(.MuiSlider-track) {
-  border-radius: 0;
-}
-
 .help {
   font: 400 12px var(--font-sans);
   color: var(--muted);

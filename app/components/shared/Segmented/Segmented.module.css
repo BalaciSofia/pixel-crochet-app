@@ -40,3 +40,8 @@
 .strong .item {
   padding: 0 16px;
 }
+
+.group .small {
+  height: 38px;
+  padding: 0 11px;
+}

@@ -38,7 +38,7 @@ export default function YarnCalculator({ open, onOpen, value, onChange, autoFocu
           </span>
         </label>
       ) : (
-        <Button variant="outlined" color="inherit" onClick={onOpen} className={styles.button}>
+        <Button variant="outlined" color="neutral" size="compact" onClick={onOpen}>
           Calculate yarn needed
         </Button>
       )}

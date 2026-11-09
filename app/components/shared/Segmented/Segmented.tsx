@@ -21,6 +21,7 @@ interface Props<T extends string> {
   ariaLabel: string;
   strong?: boolean;
   dense?: boolean;
+  small?: boolean;
   className?: string;
 }
 
@@ -31,6 +32,7 @@ export default function Segmented<T extends string>({
   ariaLabel,
   strong = false,
   dense = false,
+  small = false,
   className,
 }: Props<T>) {
   return (
@@ -49,7 +51,7 @@ export default function Segmented<T extends string>({
             key={option.value}
             value={option.value}
             aria-label={option.ariaLabel}
-            className={`${styles.item} ${dense ? styles.dense : ''}`}
+            className={`${styles.item} ${dense ? styles.dense : ''} ${small ? styles.small : ''}`}
           >
             {option.icon}
             {option.label}
