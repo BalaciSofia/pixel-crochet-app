@@ -206,9 +206,7 @@ export default function Toolbar({
               </span>
             </>
           ) : (
-            <>
-              Working row {nextRow ?? rows} of {rows}
-            </>
+            <>{nextRow === null ? `All ${rows} rows finished` : `Working row ${nextRow} of ${rows}`}</>
           )}
         </span>
       </div>
