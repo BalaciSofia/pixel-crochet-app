@@ -1,0 +1,43 @@
+.art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: #FFF9FB;
+  background-image:
+    linear-gradient(#F6E1E9 1px, transparent 1px),
+    linear-gradient(90deg, #F6E1E9 1px, transparent 1px);
+  background-size: 16px 16px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 160px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 160px), transparent 100%);
+}
+
+.cell {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+}
+
+.animate .cell {
+  animation: pop 0.42s cubic-bezier(0.2, 0.8, 0.3, 1.2) both;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate .cell {
+    animation: none;
+  }
+}
