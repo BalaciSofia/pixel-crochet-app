@@ -1,23 +1,24 @@
 .logo {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .mark {
   display: grid;
-  grid-template-columns: repeat(3, 10px);
-  gap: 2px;
+  grid-template-columns: repeat(3, 13px);
+  gap: 3px;
   flex: none;
 }
 
 .square {
-  width: 10px;
-  height: 10px;
+  width: 13px;
+  height: 13px;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 28, 0.12);
 }
 
 .wordmark {
-  font: 700 20px/1.2 var(--font-sans);
-  letter-spacing: -0.01em;
+  font: 700 24px/1.15 var(--font-sans);
+  letter-spacing: -0.02em;
   color: var(--ink);
 }

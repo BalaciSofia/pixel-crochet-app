@@ -51,6 +51,12 @@
   box-shadow: var(--shadow-plate);
 }
 
+.logoPlate {
+  padding: 14px 20px 14px 16px;
+  border-color: var(--ink);
+  box-shadow: 6px 6px 0 rgba(178, 74, 116, 0.32);
+}
+
 .tagline {
   margin: 0;
   padding: 16px 18px;

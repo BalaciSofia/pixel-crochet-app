@@ -151,7 +151,7 @@ export default function Gallery({ onOpenProject }: Props) {
         {showWelcome && <Welcome visible={!entered} onStart={handleStart} />}
 
         <div className={styles.plates} aria-hidden={!entered}>
-          <div className={styles.plate}>
+          <div className={`${styles.plate} ${styles.logoPlate}`}>
             <Logo />
           </div>
           <p className={`${styles.plate} ${styles.tagline}`}>
