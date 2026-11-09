@@ -107,10 +107,6 @@
   min-width: 0;
 }
 
-.yarnLink {
-  align-self: flex-start;
-}
-
 .empty {
   display: flex;
   flex-direction: column;

@@ -11,6 +11,7 @@ import FiletPanel from './FiletPanel';
 import Scatter from './FiletPanel/Scatter';
 import Welcome from './Welcome';
 import HomeHeader from './HomeHeader';
+import YarnStrip from './YarnStrip';
 import Icon from '../shared/Icon';
 import Logo from '../shared/Logo';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
@@ -74,6 +75,10 @@ export default function Gallery({ onOpenProject }: Props) {
   useEffect(() => {
     if (showWelcome && entered) headingRef.current?.focus({ preventScroll: true });
   }, [showWelcome, entered]);
+
+  const handleOpenYarn = useCallback(() => {
+    setIsYarnOpen(true);
+  }, []);
 
   const handleOpenModal = useCallback(() => {
     setIsModalOpen(true);
@@ -144,9 +149,7 @@ export default function Gallery({ onOpenProject }: Props) {
             onImport={handleOpenImageModal}
           />
 
-          <Button color="inherit" onClick={() => setIsYarnOpen(true)} className={styles.yarnLink}>
-            My yarn
-          </Button>
+          <YarnStrip onOpen={handleOpenYarn} />
 
           {projects.length === 0 ? (
             <div className={styles.empty}>
