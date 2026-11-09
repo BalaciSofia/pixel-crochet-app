@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
@@ -12,9 +12,33 @@ import ProjectCard from './ProjectCard';
 import NewProjectModal from './NewProjectModal';
 import ImageToPixelModal from './ImageToPixelModal';
 import YarnStashDialog from './YarnStashDialog';
+import FiletPanel from './FiletPanel';
+import Scatter from './FiletPanel/Scatter';
+import Welcome from './Welcome';
+import Logo from '../shared/Logo';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 import useProjectStore from '../../store/useProjectStore';
+import { useElementSize } from '../../hooks/useElementSize';
+import { FILET_SQUARE } from '../../utils/filet';
 import type { Project } from '../../types';
+
+const WELCOMED_KEY = 'pps:welcomed';
+const PANEL_WIDTH = 440;
+const NARROW_WIDTH = 900;
+
+function readWelcomed(): boolean {
+  try {
+    return window.sessionStorage.getItem(WELCOMED_KEY) !== null;
+  } catch {
+    return true;
+  }
+}
+
+function markWelcomed() {
+  try {
+    window.sessionStorage.setItem(WELCOMED_KEY, '1');
+  } catch {}
+}
 
 interface Props {
   onOpenProject: (id: string) => void;
@@ -27,6 +51,26 @@ export default function Gallery({ onOpenProject }: Props) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isYarnOpen, setIsYarnOpen] = useState(false);
   const { requestConfirm, dialogProps } = useConfirmDialog();
+
+  const [showWelcome] = useState(() => !readWelcomed());
+  const [entered, setEntered] = useState(!showWelcome);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const size = useElementSize(rootRef);
+
+  const narrow = size.width > 0 && size.width <= NARROW_WIDTH;
+  const artWidth = showWelcome || narrow ? size.width : PANEL_WIDTH;
+  const artCols = Math.ceil(artWidth / FILET_SQUARE);
+  const artRows = Math.ceil(size.height / FILET_SQUARE);
+
+  const handleStart = useCallback(() => {
+    markWelcomed();
+    setEntered(true);
+  }, []);
+
+  useEffect(() => {
+    if (showWelcome && entered) headingRef.current?.focus({ preventScroll: true });
+  }, [showWelcome, entered]);
 
   const handleOpenModal = useCallback(() => {
     setIsModalOpen(true);
@@ -67,51 +111,78 @@ export default function Gallery({ onOpenProject }: Props) {
   );
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 700 }} className={styles.title}>
-          Pixel Pattern Studio
-        </Typography>
-        <Typography variant="h6" component="p" color="text.secondary" sx={{ fontWeight: 400 }}>
-          My patterns
-        </Typography>
-        <Button
-          color="inherit"
-          startIcon={<PaletteOutlinedIcon />}
-          onClick={() => setIsYarnOpen(true)}
-        >
-          My yarn
-        </Button>
-      </header>
+    <div ref={rootRef} className={`${styles.root} ${entered ? styles.entered : styles.welcome}`}>
+      <aside className={styles.panel} aria-label="Pixel Pattern Studio">
+        <FiletPanel cols={artCols} rows={artRows} animate={showWelcome} />
 
-      <div className={styles.grid}>
-        <ButtonBase className={styles.newCard} onClick={handleOpenModal}>
-          <span className={styles.newIcon}>
-            <AddIcon fontSize="large" color="primary" />
-          </span>
-          <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
-            New Pattern
-          </Typography>
-        </ButtonBase>
+        {showWelcome && <Welcome visible={!entered} onStart={handleStart} />}
 
-        <ButtonBase className={styles.newCard} onClick={handleOpenImageModal}>
-          <span className={styles.newIcon}>
-            <PhotoCameraIcon fontSize="large" color="primary" />
-          </span>
-          <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
-            Image to Pixel
-          </Typography>
-        </ButtonBase>
+        <div className={styles.plates} aria-hidden={!entered}>
+          <div className={styles.plate}>
+            <Logo />
+          </div>
+          <p className={`${styles.plate} ${styles.tagline}`}>
+            Design it square by square.
+            <br />
+            Crochet it row by row.
+          </p>
+        </div>
+      </aside>
 
-        {projects.map(project => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onClick={() => onOpenProject(project.id)}
-            onDelete={() => handleDeleteProject(project)}
-          />
-        ))}
-      </div>
+      <Scatter rows={artRows} className={styles.scatter} />
+
+      <main className={styles.main} inert={!entered}>
+        <div className={styles.content}>
+          <header className={styles.header}>
+            <Typography
+              ref={headingRef}
+              tabIndex={-1}
+              variant="h3"
+              component="h1"
+              sx={{ fontWeight: 700 }}
+              className={styles.title}
+            >
+              My patterns
+            </Typography>
+            <Button
+              color="inherit"
+              startIcon={<PaletteOutlinedIcon />}
+              onClick={() => setIsYarnOpen(true)}
+            >
+              My yarn
+            </Button>
+          </header>
+
+          <div className={styles.grid}>
+            <ButtonBase className={styles.newCard} onClick={handleOpenModal}>
+              <span className={styles.newIcon}>
+                <AddIcon fontSize="large" color="primary" />
+              </span>
+              <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
+                New Pattern
+              </Typography>
+            </ButtonBase>
+
+            <ButtonBase className={styles.newCard} onClick={handleOpenImageModal}>
+              <span className={styles.newIcon}>
+                <PhotoCameraIcon fontSize="large" color="primary" />
+              </span>
+              <Typography variant="body2" sx={{ fontWeight: 500 }} color="text.secondary">
+                Image to Pixel
+              </Typography>
+            </ButtonBase>
+
+            {projects.map(project => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onClick={() => onOpenProject(project.id)}
+                onDelete={() => handleDeleteProject(project)}
+              />
+            ))}
+          </div>
+        </div>
+      </main>
 
       {isModalOpen && (
         <NewProjectModal
