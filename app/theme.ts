@@ -29,8 +29,7 @@ export const theme = createTheme({
     borderRadius: 8,
   },
   typography: {
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif",
+    fontFamily: 'var(--font-outfit), system-ui, sans-serif',
     button: {
       textTransform: 'none',
       fontWeight: 500,
