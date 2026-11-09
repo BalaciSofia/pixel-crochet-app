@@ -123,27 +123,62 @@
 .compact {
   min-height: 56px;
   padding: 6px 8px;
-  gap: 4px 8px;
+  gap: 4px;
 }
 
 .compact .tools {
   order: 10;
   flex-basis: 100%;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-soft);
 }
 
 .compact .center {
-  flex-basis: 120px;
+  flex: 1 1 0;
+  align-items: flex-start;
+  padding-left: 2px;
+}
+
+.compact .nameButton {
+  padding: 0 4px;
+  font-size: 15px;
+}
+
+.compact .subtitle {
+  padding-left: 4px;
+  white-space: nowrap;
 }
 
 @media (max-width: 599px) {
-  .toolGroup :global(.toolLabel) {
+  .toolGroup :global(.toolLabel),
+  .modeGroup :global(.modeLabel),
+  .compact .subtitle .hideNarrow {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+
+  .compact .tools {
+    gap: 4px;
+  }
+
+  .compact .history {
+    gap: 0;
+  }
+
+  .compact .iconButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toolbar .toolGroup :global(.MuiToggleButton-root),
+  .toolbar .modeGroup :global(.MuiToggleButton-root) {
+    height: 38px;
+    padding: 0 11px;
   }
 }

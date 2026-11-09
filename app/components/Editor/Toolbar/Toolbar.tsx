@@ -39,8 +39,8 @@ const TOOL_OPTIONS: SegmentedOption<Tool>[] = [
 ];
 
 const MODE_OPTIONS: SegmentedOption<EditorMode>[] = [
-  { value: 'edit', label: 'Edit', icon: <Icon name="pencil" size={16} /> },
-  { value: 'work', label: 'Work', icon: <Icon name="work" size={16} /> },
+  { value: 'edit', label: <span className="modeLabel">Edit</span>, ariaLabel: 'Edit', icon: <Icon name="pencil" size={16} /> },
+  { value: 'work', label: <span className="modeLabel">Work</span>, ariaLabel: 'Work', icon: <Icon name="work" size={16} /> },
 ];
 
 export default function Toolbar({
@@ -98,14 +98,9 @@ export default function Toolbar({
   return (
     <header className={`${styles.toolbar} ${compact ? styles.compact : ''}`}>
       {compact ? (
-        <>
-          <IconButton onClick={onBack} aria-label="Back to patterns" className={styles.iconButton}>
-            <Icon name="arrowLeft" size={20} />
-          </IconButton>
-          <IconButton onClick={onOpenPanel} aria-label="Open side panel" className={styles.iconButton}>
-            <Icon name="menu" size={20} />
-          </IconButton>
-        </>
+        <IconButton onClick={onBack} aria-label="Back to patterns" className={styles.iconButton}>
+          <Icon name="arrowLeft" size={20} />
+        </IconButton>
       ) : (
         <>
           <Button
@@ -191,8 +186,8 @@ export default function Toolbar({
             <>
               <span className={styles.mono}>
                 {cols} × {rows}
-              </span>{' '}
-              stitches
+              </span>
+              <span className={styles.hideNarrow}>stitches</span>
               <span aria-hidden="true">·</span>
               <span className={styles.saveState}>
                 {saving ? (
@@ -241,7 +236,18 @@ export default function Toolbar({
         onChange={handleModeChange}
         ariaLabel="Mode"
         strong
+        className={styles.modeGroup}
       />
+
+      {compact && (
+        <IconButton
+          onClick={onOpenPanel}
+          aria-label={mode === 'edit' ? 'Open colors and size' : 'Open rows and colors'}
+          className={styles.iconButton}
+        >
+          <Icon name="menu" size={20} />
+        </IconButton>
+      )}
     </header>
   );
 }
