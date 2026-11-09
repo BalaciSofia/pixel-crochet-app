@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Drawer from '@mui/material/Drawer';
+import Snackbar from '@mui/material/Snackbar';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import styles from './Editor.module.css';
@@ -56,6 +57,7 @@ function EditorContent({ project, onBack }: ContentProps) {
   const compact = useMediaQuery(theme.breakpoints.down('md'));
   const [panelOpen, setPanelOpen] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
+  const [rowMessage, setRowMessage] = useState<string | null>(null);
 
   const renameProject = useProjectStore(state => state.renameProject);
   const resizeProject = useProjectStore(state => state.resizeProject);
@@ -164,8 +166,19 @@ function EditorContent({ project, onBack }: ContentProps) {
   }, [projectId, resetCompletedRows, requestConfirm]);
 
   const handleToggleRow = useCallback(
-    (row: number) => toggleRowComplete(projectId, row),
-    [projectId, toggleRowComplete]
+    (row: number) => {
+      const displayRow = project.rows - row;
+      const lastDone = (nextRow ?? project.rows + 1) - 1;
+      if (completedRows.has(row)) {
+        if (displayRow === lastDone) toggleRowComplete(projectId, row);
+        else setRowMessage(`Only the last finished row (row ${lastDone}) can be unticked.`);
+      } else if (displayRow === nextRow) {
+        toggleRowComplete(projectId, row);
+      } else {
+        setRowMessage(`Finish row ${nextRow} first.`);
+      }
+    },
+    [project.rows, nextRow, completedRows, projectId, toggleRowComplete]
   );
 
   const handleToggleMode = useCallback(() => {
@@ -260,6 +273,15 @@ function EditorContent({ project, onBack }: ContentProps) {
           onApply={handleApplyMatches}
         />
       )}
+
+      <Snackbar
+        open={rowMessage !== null}
+        message={rowMessage}
+        autoHideDuration={2500}
+        onClose={() => setRowMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        slotProps={{ content: { className: styles.toast } }}
+      />
 
       <ConfirmDialog {...dialogProps} />
     </div>

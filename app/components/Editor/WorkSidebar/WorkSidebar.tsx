@@ -105,7 +105,7 @@ export default function WorkSidebar({
       <section className={`${styles.section} ${styles.rowsSection}`}>
         <div className={styles.sectionHeader}>
           <SectionLabel>Rows</SectionLabel>
-          <span className={styles.hint}>Tap a row to tick it off</span>
+          <span className={styles.hint}>Tick rows off in order</span>
         </div>
         <ul className={styles.rowList}>
           {Array.from({ length: totalRows }, (_, i) => i + 1).map(displayRow => {
