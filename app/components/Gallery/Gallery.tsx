@@ -218,8 +218,8 @@ export default function Gallery({ onOpenProject }: Props) {
                     <li key={project.id} className={styles.gridItem}>
                       <ProjectCard
                         project={project}
-                        onClick={() => onOpenProject(project.id)}
-                        onDelete={() => handleDeleteProject(project)}
+                        onOpen={onOpenProject}
+                        onDelete={handleDeleteProject}
                       />
                     </li>
                   ))}

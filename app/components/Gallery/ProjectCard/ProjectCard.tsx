@@ -17,8 +17,8 @@ import { completedCount, editedLabel, projectStatus } from '../../../utils/proje
 
 interface Props {
   project: Project;
-  onClick: () => void;
-  onDelete: () => void;
+  onOpen: (id: string) => void;
+  onDelete: (project: Project) => void;
 }
 
 interface MenuPosition {
@@ -26,7 +26,7 @@ interface MenuPosition {
   left: number;
 }
 
-const ProjectCard = React.memo(function ProjectCard({ project, onClick, onDelete }: Props) {
+const ProjectCard = React.memo(function ProjectCard({ project, onOpen, onDelete }: Props) {
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
 
   const thumbnail = useMemo(() => createThumbnail(project.grid, 150), [project.grid]);
@@ -41,9 +41,9 @@ const ProjectCard = React.memo(function ProjectCard({ project, onClick, onDelete
     (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
-      onClick();
+      onOpen(project.id);
     },
-    [onClick]
+    [onOpen, project.id]
   );
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -63,8 +63,8 @@ const ProjectCard = React.memo(function ProjectCard({ project, onClick, onDelete
 
   const handleDeleteClick = useCallback(() => {
     setMenuPosition(null);
-    onDelete();
-  }, [onDelete]);
+    onDelete(project);
+  }, [onDelete, project]);
 
   return (
     <article className={styles.card} onContextMenu={handleContextMenu}>
