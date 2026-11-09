@@ -1,30 +1,86 @@
 .container {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   overflow: auto;
   touch-action: pan-x pan-y;
   overscroll-behavior: contain;
-  background: 
-    linear-gradient(45deg, #E8E8E8 25%, transparent 25%),
-    linear-gradient(-45deg, #E8E8E8 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #E8E8E8 75%),
-    linear-gradient(-45deg, transparent 75%, #E8E8E8 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-  background-color: #F0F0F0;
 }
 
 .wrapper {
-  display: inline-block;
-  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  padding: 40px 40px 96px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 40px auto;
+  gap: 6px;
+}
+
+.gutter {
+  display: flex;
+  flex-direction: column;
+  padding-top: 1px;
+}
+
+.rowNumber {
+  flex: none;
+  padding: 0 6px 0 0;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font: 500 10px var(--font-mono-stack);
+  color: var(--muted);
+  cursor: pointer;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.rowNumber:hover {
+  color: var(--rose);
+}
+
+.done {
+  color: var(--cherry);
+}
+
+.next {
+  font-weight: 700;
+  color: var(--rose);
+}
+
+.frame {
+  position: relative;
+  border: 1px solid var(--ink);
+  box-shadow: var(--shadow-canvas);
+  line-height: 0;
 }
 
 .canvas {
-  background: white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  display: block;
+  background: var(--white);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
   user-select: none;
+}
+
+.nextOutline {
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  box-shadow:
+    0 0 0 2px var(--rose),
+    0 0 0 5px rgba(178, 74, 116, 0.25);
+  pointer-events: none;
+}
+
+@media (max-width: 599px) {
+  .wrapper {
+    padding: 24px 24px 88px 12px;
+  }
 }

@@ -2,21 +2,17 @@
 
 import React, { useMemo } from 'react';
 import Button from '@mui/material/Button';
-import LinearProgress from '@mui/material/LinearProgress';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import styles from './WorkSidebar.module.css';
+import Icon from '../../shared/Icon';
+import SectionLabel from '../../shared/SectionLabel';
+import { useYarnNames } from '../../../hooks/useYarnNames';
 import type { Project } from '../../../types';
 import { getStitchCounts } from '../../../utils/exportUtils';
 
 interface Props {
   project: Project;
   completedRows: Set<number>;
+  nextRow: number | null;
   onToggleRow: (row: number) => void;
   onResetProgress: () => void;
 }
@@ -24,12 +20,14 @@ interface Props {
 export default function WorkSidebar({
   project,
   completedRows,
+  nextRow,
   onToggleRow,
   onResetProgress,
 }: Props) {
   const totalRows = project.rows;
   const completedCount = completedRows.size;
-  const progress = Math.round((completedCount / totalRows) * 100);
+  const progress = totalRows > 0 ? Math.round((completedCount / totalRows) * 100) : 0;
+  const yarnNames = useYarnNames();
 
   const stitchCounts = useMemo(() => getStitchCounts(project.grid), [project.grid]);
   const totalStitches = useMemo(
@@ -44,85 +42,94 @@ export default function WorkSidebar({
   return (
     <aside className={styles.sidebar}>
       <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Progress
-        </Typography>
-
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          className={styles.progressBar}
+        <SectionLabel>Progress</SectionLabel>
+        <div className={styles.progressHead}>
+          <span className={styles.progressCount}>
+            {completedCount}
+            <span className={styles.progressTotal}> / {totalRows} rows</span>
+          </span>
+          <span className={styles.percent}>{progress}%</span>
+        </div>
+        <div
+          role="progressbar"
           aria-label="Rows completed"
-        />
-
-        <Typography variant="body2" sx={{ fontWeight: 600 }} align="center">
-          {completedCount} / {totalRows} rows ({progress}%)
-        </Typography>
+          aria-valuemin={0}
+          aria-valuemax={totalRows}
+          aria-valuenow={completedCount}
+          className={styles.track}
+        >
+          <div className={styles.bar} style={{ width: `${progress}%` }} />
+        </div>
       </section>
 
-      <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Rows
-        </Typography>
-
-        <List dense disablePadding className={styles.rowList}>
+      <section className={`${styles.section} ${styles.rowsSection}`}>
+        <div className={styles.sectionHeader}>
+          <SectionLabel>Rows</SectionLabel>
+          <span className={styles.hint}>Tap a row to tick it off</span>
+        </div>
+        <ul className={styles.rowList}>
           {Array.from({ length: totalRows }, (_, i) => i + 1).map(displayRow => {
             const dataRow = totalRows - displayRow;
-            const completed = completedRows.has(dataRow);
+            const done = completedRows.has(dataRow);
+            const isNext = displayRow === nextRow;
             return (
-              <ListItemButton
-                key={displayRow}
-                selected={completed}
-                onClick={() => onToggleRow(dataRow)}
-                className={styles.rowItem}
-              >
-                <ListItemText
-                  primary={`Row ${displayRow}`}
-                  slotProps={{
-                    primary: {
-                      variant: 'body2',
-                      className: completed ? styles.rowDone : undefined,
-                    },
-                  }}
-                />
-                {completed ? (
-                  <CheckCircleIcon fontSize="small" color="secondary" />
-                ) : (
-                  <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
-                )}
-              </ListItemButton>
+              <li key={displayRow}>
+                <button
+                  type="button"
+                  aria-pressed={done}
+                  onClick={() => onToggleRow(dataRow)}
+                  className={`${styles.rowItem} ${done ? styles.rowDone : ''} ${isNext ? styles.rowNext : ''}`}
+                >
+                  <span>Row {displayRow}</span>
+                  {done ? (
+                    <span className={styles.check} aria-hidden="true">
+                      <Icon name="check" size={12} strokeWidth={3.5} />
+                    </span>
+                  ) : isNext ? (
+                    <span className={styles.nextBadge}>Next</span>
+                  ) : (
+                    <span className={styles.todo} aria-hidden="true" />
+                  )}
+                </button>
+              </li>
             );
           })}
-        </List>
+        </ul>
       </section>
 
       <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Colors Needed
-        </Typography>
-
-        <div className={styles.colorList}>
-          {sortedCounts.map(([hex, count]) => (
-            <div key={hex} className={styles.colorRow}>
-              <span className={styles.colorSwatch} style={{ backgroundColor: hex }} />
-              <span className={styles.colorHex}>{hex}</span>
-              <span className={styles.colorCount}>{count}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.totalStitch}>
-          Total: <strong>{totalStitches}</strong> stitches
+        <SectionLabel>Colors needed</SectionLabel>
+        <ul className={styles.colorList}>
+          {sortedCounts.map(([hex, count]) => {
+            const name = yarnNames.get(hex.toUpperCase());
+            return (
+              <li key={hex} className={styles.colorRow}>
+                <span className={styles.colorSwatch} style={{ backgroundColor: hex }} aria-hidden="true" />
+                <span className={styles.colorName}>
+                  {name && <>{name} </>}
+                  <span className={styles.colorHex}>{hex.toUpperCase()}</span>
+                </span>
+                <span className={styles.colorCount}>{count.toLocaleString('en-US')}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <div className={styles.total}>
+          <span>Total stitches</span>
+          <span className={styles.totalValue}>{totalStitches.toLocaleString('en-US')}</span>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <Typography variant="overline" color="text.secondary" component="h3" className={styles.sectionTitle}>
-          Actions
-        </Typography>
-
-        <Button variant="outlined" color="secondary" fullWidth startIcon={<RestartAltIcon />} onClick={onResetProgress}>
-          Reset Progress
+      <section className={styles.resetSection}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          fullWidth
+          startIcon={<Icon name="reset" size={16} strokeWidth={2.2} />}
+          onClick={onResetProgress}
+          className={styles.reset}
+        >
+          Reset progress
         </Button>
       </section>
     </aside>

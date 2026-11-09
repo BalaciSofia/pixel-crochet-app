@@ -162,6 +162,7 @@ function EditorContent({ project, onBack }: ContentProps) {
       <WorkSidebar
         project={project}
         completedRows={completedRows}
+        nextRow={nextRow}
         onToggleRow={handleToggleRow}
         onResetProgress={handleResetProgress}
       />
@@ -205,7 +206,12 @@ function EditorContent({ project, onBack }: ContentProps) {
           {mode === 'edit' ? (
             <Canvas project={project} />
           ) : (
-            <WorkCanvas project={project} completedRows={completedRows} onToggleRow={handleToggleRow} />
+            <WorkCanvas
+              project={project}
+              completedRows={completedRows}
+              nextRow={nextRow}
+              onToggleRow={handleToggleRow}
+            />
           )}
 
           <ZoomBar />
