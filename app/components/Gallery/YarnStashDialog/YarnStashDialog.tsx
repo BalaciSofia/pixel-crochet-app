@@ -57,6 +57,7 @@ export default function YarnStashDialog({ onClose }: Props) {
                 placeholder="Name (optional)"
                 value={yarn.name}
                 onChange={e => renameYarn(yarn.id, e.target.value)}
+                onBlur={e => renameYarn(yarn.id, e.target.value.trim())}
                 aria-label={`Name for ${yarn.color}`}
               />
               <span className={styles.hex}>{yarn.color}</span>
