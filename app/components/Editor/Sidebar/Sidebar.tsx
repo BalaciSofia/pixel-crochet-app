@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import styles from './Sidebar.module.css';
@@ -73,12 +73,13 @@ export default function Sidebar({
     colorInputRef.current?.click();
   }, []);
 
-  const handleNewColorChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onAddColor(e.target.value);
-    },
-    [onAddColor]
-  );
+  useEffect(() => {
+    const input = colorInputRef.current;
+    if (!input) return;
+    const handleChange = () => onAddColor(input.value);
+    input.addEventListener('change', handleChange);
+    return () => input.removeEventListener('change', handleChange);
+  }, [onAddColor]);
 
   const palette = project.palette || [];
   const toBuy = useMemo(() => new Set(toBuyList), [toBuyList]);
@@ -141,7 +142,7 @@ export default function Sidebar({
           <input
             ref={colorInputRef}
             type="color"
-            onChange={handleNewColorChange}
+            defaultValue="#000000"
             className={styles.hiddenColorInput}
             tabIndex={-1}
             aria-hidden="true"
