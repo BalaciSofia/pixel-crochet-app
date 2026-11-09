@@ -6,8 +6,7 @@ import styles from './NewProjectModal.module.css';
 import AppDialog from '../../shared/AppDialog';
 import Field, { FieldInput } from '../../shared/Field';
 import useProjectStore from '../../../store/useProjectStore';
-import useYarnStore from '../../../store/useYarnStore';
-import { DEFAULT_PALETTE, type Project } from '../../../types';
+import type { Project } from '../../../types';
 
 interface Props {
   onClose: () => void;
@@ -16,12 +15,9 @@ interface Props {
 
 export default function NewProjectModal({ onClose, onCreated }: Props) {
   const createProject = useProjectStore(state => state.createProject);
-  const yarns = useYarnStore(state => state.yarns);
   const [name, setName] = useState('Untitled Pattern');
   const [width, setWidth] = useState(32);
   const [height, setHeight] = useState(24);
-
-  const startingColors = yarns.length > 0 ? yarns.map(yarn => yarn.color) : DEFAULT_PALETTE;
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -90,22 +86,6 @@ export default function NewProjectModal({ onClose, onCreated }: Props) {
         <span className={styles.summaryValue}>
           {width} × {height} = {(width * height).toLocaleString('en-US')} stitches
         </span>
-      </div>
-
-      <div className={styles.palette}>
-        <span className={styles.paletteLabel}>Starting palette</span>
-        <div className={styles.paletteRow}>
-          <div className={styles.swatches} aria-hidden="true">
-            {startingColors.map(color => (
-              <span key={color} className={styles.swatch} style={{ background: color }} />
-            ))}
-          </div>
-          <span className={styles.paletteNote}>
-            {yarns.length > 0
-              ? `Your ${yarns.length} yarn ${yarns.length === 1 ? 'color' : 'colors'}`
-              : 'Basic colors'}
-          </span>
-        </div>
       </div>
     </AppDialog>
   );

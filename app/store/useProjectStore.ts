@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Project } from '../types';
-import { DEFAULT_PALETTE } from '../types';
 import { idbStorage } from './idbStorage';
 import useYarnStore from './useYarnStore';
 
 function startingPalette(): string[] {
   const yarns = useYarnStore.getState().yarns;
-  return yarns.length > 0 ? yarns.map(yarn => yarn.color) : [...DEFAULT_PALETTE];
+  return yarns.map(yarn => yarn.color);
 }
 
 function createEmptyGrid(rows: number, cols: number): (string | null)[][] {
