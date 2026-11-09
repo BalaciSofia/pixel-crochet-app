@@ -1,74 +1,149 @@
-
 .toolbar {
+  min-height: 64px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  min-height: 56px;
-  padding: 0 16px;
-  background: white;
-  border-bottom: 1px solid #E8E8E8;
-  gap: 12px;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
 }
 
-.toolGroup {
+.toolbar .back {
+  height: 44px;
+  padding: 0 12px 0 8px;
+  font-weight: 500;
+}
+
+.toolbar .back:global(.MuiButton-root) :global(.MuiButton-startIcon) {
+  margin-right: 6px;
+}
+
+.divider {
+  width: 1px;
+  height: 28px;
+  margin: 0 4px;
+  background: var(--line);
+}
+
+.tools {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px;
-  background: #F5F5F5;
-  border-radius: 10px;
+  gap: 8px;
+}
+
+.history {
+  display: flex;
+  gap: 2px;
+}
+
+.toolbar .iconButton {
+  width: 44px;
+  height: 44px;
+  color: var(--ink);
+}
+
+.toolbar .danger {
+  color: var(--cherry);
 }
 
 .center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+  flex: 1 1 200px;
   min-width: 0;
-}
-
-.toolbar {
-  flex-wrap: wrap;
-}
-
-@media (max-width: 899px) {
-  .toolbar {
-    padding: 4px 8px;
-    gap: 4px 8px;
-  }
-
-  .toolGroup {
-    order: 10;
-    flex-basis: 100%;
-    justify-content: center;
-    overflow-x: auto;
-  }
-
-  .nameButton {
-    max-width: 40vw;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
 }
 
 .nameButton {
-  font-size: 16px;
-  font-weight: 600;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 16px var(--font-sans);
+  cursor: pointer;
+}
+
+.nameButton:hover {
+  background: var(--blush);
+}
+
+.nameText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-  max-width: 200px;
 }
 
 .nameInput {
-  font-size: 16px;
-  font-weight: 600;
+  width: min(280px, 100%);
+  height: 30px;
+  padding: 0 8px;
+  border: 2px solid var(--rose);
+  border-radius: 2px;
+  font: 600 16px var(--font-sans);
+  color: var(--ink);
   text-align: center;
-  min-width: 150px;
-  max-width: 200px;
 }
 
-.actions {
-  display: flex;
+.nameInput:focus-visible {
+  outline: none;
+}
+
+.subtitle {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--font-mono-stack);
+}
+
+.saveState {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar .export {
+  height: 44px;
+  padding: 0 14px;
+  border-color: var(--line);
+}
+
+.compact {
+  min-height: 56px;
+  padding: 6px 8px;
+  gap: 4px 8px;
+}
+
+.compact .tools {
+  order: 10;
+  flex-basis: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.compact .center {
+  flex-basis: 120px;
+}
+
+@media (max-width: 599px) {
+  .toolGroup :global(.toolLabel) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Drawer from '@mui/material/Drawer';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
@@ -20,6 +20,7 @@ import { useUndoRedoShortcuts } from '../../hooks/useUndoRedoShortcuts';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 import LoadingScreen from '../shared/LoadingScreen';
 import type { Project } from '../../types';
+import { nextDisplayRow } from '../../utils/projectStatus';
 
 interface Props {
   projectId: string;
@@ -76,6 +77,10 @@ function EditorContent({ project, onBack }: ContentProps) {
   const { exportPDF } = useExport();
   const { requestConfirm, dialogProps } = useConfirmDialog();
   const completedRows = useCompletedRows(project);
+  const nextRow = useMemo(
+    () => nextDisplayRow(project.rows, completedRows),
+    [project.rows, completedRows]
+  );
 
   const projectId = project.id;
 
@@ -167,6 +172,9 @@ function EditorContent({ project, onBack }: ContentProps) {
       <Toolbar
         projectName={project.name}
         onRename={handleRename}
+        cols={project.cols}
+        rows={project.rows}
+        nextRow={nextRow}
         compact={compact}
         onOpenPanel={openPanel}
         onBack={onBack}

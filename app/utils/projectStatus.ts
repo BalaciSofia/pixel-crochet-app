@@ -39,3 +39,10 @@ export function editedLabel(isoDate: string, now: Date = new Date()): string {
   if (days < 730) return 'Edited last year';
   return `Edited ${Math.floor(days / 365)} years ago`;
 }
+
+export function nextDisplayRow(rows: number, completedRows: Set<number>): number | null {
+  for (let displayRow = 1; displayRow <= rows; displayRow++) {
+    if (!completedRows.has(rows - displayRow)) return displayRow;
+  }
+  return null;
+}

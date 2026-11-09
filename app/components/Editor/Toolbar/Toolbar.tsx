@@ -2,29 +2,21 @@
 
 import React, { useCallback, useState } from 'react';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AutoFixNormalIcon from '@mui/icons-material/AutoFixNormal';
-import ChecklistIcon from '@mui/icons-material/Checklist';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import EditIcon from '@mui/icons-material/Edit';
-import MenuIcon from '@mui/icons-material/Menu';
-import FormatColorFillIcon from '@mui/icons-material/FormatColorFill';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import RedoIcon from '@mui/icons-material/Redo';
-import UndoIcon from '@mui/icons-material/Undo';
 import styles from './Toolbar.module.css';
+import Icon from '../../shared/Icon';
+import Segmented, { type SegmentedOption } from '../../shared/Segmented';
+import { useSaveStatus } from '../../../hooks/useSaveStatus';
 import type { EditorMode } from '../../../store/useEditorStore';
 import type { Tool } from '../../../types';
 
 interface Props {
   projectName: string;
   onRename: (name: string) => void;
+  cols: number;
+  rows: number;
+  nextRow: number | null;
   compact: boolean;
   onOpenPanel: () => void;
   onBack: () => void;
@@ -40,9 +32,23 @@ interface Props {
   onExportPDF?: () => void;
 }
 
+const TOOL_OPTIONS: SegmentedOption<Tool>[] = [
+  { value: 'draw', label: <span className="toolLabel">Draw</span>, ariaLabel: 'Draw', icon: <Icon name="draw" strokeWidth={1.9} />, tooltip: 'Draw' },
+  { value: 'erase', label: <span className="toolLabel">Erase</span>, ariaLabel: 'Erase', icon: <Icon name="erase" strokeWidth={1.9} />, tooltip: 'Erase' },
+  { value: 'fill', label: <span className="toolLabel">Fill</span>, ariaLabel: 'Fill', icon: <Icon name="fill" strokeWidth={1.9} />, tooltip: 'Fill bucket' },
+];
+
+const MODE_OPTIONS: SegmentedOption<EditorMode>[] = [
+  { value: 'edit', label: 'Edit', icon: <Icon name="pencil" size={16} /> },
+  { value: 'work', label: 'Work', icon: <Icon name="work" size={16} /> },
+];
+
 export default function Toolbar({
   projectName,
   onRename,
+  cols,
+  rows,
+  nextRow,
   compact,
   onOpenPanel,
   onBack,
@@ -59,6 +65,7 @@ export default function Toolbar({
 }: Props) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const saving = useSaveStatus();
 
   const handleNameClick = useCallback(() => {
     setEditedName(projectName);
@@ -79,121 +86,162 @@ export default function Toolbar({
     [commitName]
   );
 
+  const handleModeChange = useCallback(
+    (next: EditorMode) => {
+      if (next !== mode) onToggleMode();
+    },
+    [mode, onToggleMode]
+  );
+
+  const showTools = mode === 'edit' && onToolChange && tool;
+
   return (
-    <header className={styles.toolbar}>
+    <header className={`${styles.toolbar} ${compact ? styles.compact : ''}`}>
       {compact ? (
         <>
-          <IconButton onClick={onBack} aria-label="Back to gallery" edge="start">
-            <ArrowBackIcon />
+          <IconButton onClick={onBack} aria-label="Back to patterns" className={styles.iconButton}>
+            <Icon name="arrowLeft" size={20} />
           </IconButton>
-          <IconButton onClick={onOpenPanel} aria-label="Open side panel">
-            <MenuIcon />
+          <IconButton onClick={onOpenPanel} aria-label="Open side panel" className={styles.iconButton}>
+            <Icon name="menu" size={20} />
           </IconButton>
         </>
       ) : (
-        <Button
-          color="inherit"
-          startIcon={<ArrowBackIcon />}
-          onClick={onBack}
-          aria-label="Back to gallery"
-        >
-          Back
-        </Button>
+        <>
+          <Button
+            color="inherit"
+            onClick={onBack}
+            startIcon={<Icon name="arrowLeft" size={20} />}
+            className={styles.back}
+          >
+            Patterns
+          </Button>
+          <span className={styles.divider} aria-hidden="true" />
+        </>
       )}
 
-      {mode === 'edit' && onToolChange && (
-        <div className={styles.toolGroup}>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
+      {showTools && (
+        <div className={styles.tools}>
+          <Segmented
+            options={TOOL_OPTIONS}
             value={tool}
-            aria-label="Drawing tool"
-            onChange={(_event, value: Tool | null) => {
-              if (value) onToolChange(value);
-            }}
-          >
-            <ToggleButton value="draw" aria-label="Draw">
-              <Tooltip title="Draw">
-                <EditIcon fontSize="small" />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="erase" aria-label="Erase">
-              <Tooltip title="Erase">
-                <AutoFixNormalIcon fontSize="small" />
-              </Tooltip>
-            </ToggleButton>
-            <ToggleButton value="fill" aria-label="Fill">
-              <Tooltip title="Fill">
-                <FormatColorFillIcon fontSize="small" />
-              </Tooltip>
-            </ToggleButton>
-          </ToggleButtonGroup>
-
-          <Divider orientation="vertical" flexItem />
-
-          <Tooltip title="Undo (Ctrl+Z)">
-            <span>
-              <IconButton size="small" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
-                <UndoIcon fontSize="small" />
+            onChange={onToolChange}
+            ariaLabel="Drawing tool"
+            className={styles.toolGroup}
+          />
+          <div className={styles.history}>
+            <Tooltip title="Undo (Ctrl+Z)">
+              <span>
+                <IconButton onClick={onUndo} disabled={!canUndo} aria-label="Undo" className={styles.iconButton}>
+                  <Icon name="undo" size={20} />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Redo (Ctrl+Y)">
+              <span>
+                <IconButton onClick={onRedo} disabled={!canRedo} aria-label="Redo" className={styles.iconButton}>
+                  <Icon name="redo" size={20} />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Clear canvas">
+              <IconButton
+                onClick={onClearCanvas}
+                aria-label="Clear canvas"
+                className={`${styles.iconButton} ${styles.danger}`}
+              >
+                <Icon name="trash" size={20} />
               </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Redo (Ctrl+Y)">
-            <span>
-              <IconButton size="small" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
-                <RedoIcon fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Clear canvas">
-            <IconButton size="small" color="secondary" onClick={onClearCanvas} aria-label="Clear canvas">
-              <DeleteOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-
-          <Divider orientation="vertical" flexItem />
-
-          <Tooltip title="Export PDF">
-            <IconButton size="small" onClick={onExportPDF} aria-label="Export PDF">
-              <PictureAsPdfIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            </Tooltip>
+            {compact && (
+              <Tooltip title="Export PDF">
+                <IconButton onClick={onExportPDF} aria-label="Export PDF" className={styles.iconButton}>
+                  <Icon name="download" size={20} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </div>
         </div>
       )}
 
       <div className={styles.center}>
         {isEditingName ? (
-          <TextField
-            variant="standard"
-            size="small"
+          <input
             value={editedName}
             onChange={e => setEditedName(e.target.value)}
             onBlur={commitName}
             onKeyDown={handleNameKeyDown}
             autoFocus
-            slotProps={{
-              htmlInput: {
-                'aria-label': 'Pattern name',
-                className: styles.nameInput,
-              },
-            }}
+            aria-label="Pattern name"
+            className={styles.nameInput}
           />
         ) : (
-          <Button color="inherit" className={styles.nameButton} onClick={handleNameClick}>
-            {projectName}
-          </Button>
+          <button
+            type="button"
+            className={styles.nameButton}
+            onClick={handleNameClick}
+            title="Rename pattern"
+          >
+            <span className={styles.nameText}>{projectName}</span>
+            <Icon name="chevronDown" size={14} color="var(--muted)" />
+          </button>
         )}
+        <span className={styles.subtitle}>
+          {mode === 'edit' ? (
+            <>
+              <span className={styles.mono}>
+                {cols} × {rows}
+              </span>{' '}
+              stitches
+              <span aria-hidden="true">·</span>
+              <span className={styles.saveState}>
+                {saving ? (
+                  'Saving…'
+                ) : (
+                  <>
+                    <Icon name="check" size={12} strokeWidth={3} color="var(--success)" />
+                    Saved
+                  </>
+                )}
+              </span>
+            </>
+          ) : (
+            <>
+              Working row {nextRow ?? rows} of {rows}
+            </>
+          )}
+        </span>
       </div>
 
-      <div className={styles.actions}>
+      {!compact && (
         <Button
-          variant={mode === 'work' ? 'contained' : 'outlined'}
-          startIcon={mode === 'edit' ? <ChecklistIcon /> : <EditIcon />}
-          onClick={onToggleMode}
+          variant="outlined"
+          color="inherit"
+          onClick={onExportPDF}
+          startIcon={<Icon name="download" />}
+          className={styles.export}
         >
-          {mode === 'edit' ? (compact ? 'Work' : 'Work Mode') : compact ? 'Edit' : 'Edit Mode'}
+          Export PDF
         </Button>
-      </div>
+      )}
+
+      {compact && mode === 'work' && (
+        <Tooltip title="Export PDF">
+          <IconButton onClick={onExportPDF} aria-label="Export PDF" className={styles.iconButton}>
+            <Icon name="download" size={20} />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {!compact && <span className={styles.divider} aria-hidden="true" />}
+
+      <Segmented
+        options={MODE_OPTIONS}
+        value={mode}
+        onChange={handleModeChange}
+        ariaLabel="Mode"
+        strong
+      />
     </header>
   );
 }

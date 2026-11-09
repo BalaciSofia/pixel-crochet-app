@@ -3,9 +3,23 @@ import type { StateStorage } from 'zustand/middleware';
 
 const SAVE_DELAY_MS = 400;
 
-function createIdbStorage(): StateStorage {
+interface IdbStorage {
+  storage: StateStorage;
+  subscribeSaving: (listener: () => void) => () => void;
+  isSaving: () => boolean;
+}
+
+function createIdbStorage(): IdbStorage {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const pending = new Map<string, string>();
+  const listeners = new Set<() => void>();
+  let saving = false;
+
+  const setSaving = (value: boolean) => {
+    if (saving === value) return;
+    saving = value;
+    listeners.forEach(listener => listener());
+  };
 
   const flush = async () => {
     if (timer !== undefined) {
@@ -21,6 +35,7 @@ function createIdbStorage(): StateStorage {
         console.error(`Could not save ${name}`, error);
       }
     }
+    if (pending.size === 0 && timer === undefined) setSaving(false);
   };
 
   if (typeof window !== 'undefined') {
@@ -34,7 +49,7 @@ function createIdbStorage(): StateStorage {
     });
   }
 
-  return {
+  const storage: StateStorage = {
     getItem: async name => {
       if (typeof window === 'undefined') return null;
       try {
@@ -57,6 +72,7 @@ function createIdbStorage(): StateStorage {
     setItem: (name, value) => {
       if (typeof window === 'undefined') return;
       pending.set(name, value);
+      setSaving(true);
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(() => {
         void flush();
@@ -72,6 +88,19 @@ function createIdbStorage(): StateStorage {
       }
     },
   };
+
+  return {
+    storage,
+    subscribeSaving: listener => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    isSaving: () => saving,
+  };
 }
 
-export const idbStorage = createIdbStorage();
+const idb = createIdbStorage();
+
+export const idbStorage = idb.storage;
+export const subscribeSaving = idb.subscribeSaving;
+export const isSaving = idb.isSaving;
