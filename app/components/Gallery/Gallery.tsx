@@ -4,11 +4,14 @@ import React, { useState, useCallback } from 'react';
 import ButtonBase from '@mui/material/ButtonBase';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
+import Button from '@mui/material/Button';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import styles from './Gallery.module.css';
 import ProjectCard from './ProjectCard';
 import NewProjectModal from './NewProjectModal';
 import ImageToPixelModal from './ImageToPixelModal';
+import YarnStashDialog from './YarnStashDialog';
 import ConfirmDialog, { useConfirmDialog } from '../shared/ConfirmDialog';
 import useProjectStore from '../../store/useProjectStore';
 import type { Project } from '../../types';
@@ -22,6 +25,7 @@ export default function Gallery({ onOpenProject }: Props) {
   const deleteProject = useProjectStore(state => state.deleteProject);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isYarnOpen, setIsYarnOpen] = useState(false);
   const { requestConfirm, dialogProps } = useConfirmDialog();
 
   const handleOpenModal = useCallback(() => {
@@ -71,6 +75,13 @@ export default function Gallery({ onOpenProject }: Props) {
         <Typography variant="h6" component="p" color="text.secondary" sx={{ fontWeight: 400 }}>
           My patterns
         </Typography>
+        <Button
+          color="inherit"
+          startIcon={<PaletteOutlinedIcon />}
+          onClick={() => setIsYarnOpen(true)}
+        >
+          My yarn
+        </Button>
       </header>
 
       <div className={styles.grid}>
@@ -115,6 +126,8 @@ export default function Gallery({ onOpenProject }: Props) {
           onCreated={handleProjectCreated}
         />
       )}
+
+      {isYarnOpen && <YarnStashDialog onClose={() => setIsYarnOpen(false)} />}
 
       <ConfirmDialog {...dialogProps} />
     </div>
