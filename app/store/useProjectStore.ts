@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Project } from '../types';
 import { DEFAULT_PALETTE } from '../types';
-import { projectStorage } from './projectStorage';
+import { idbStorage } from './idbStorage';
 
 function createEmptyGrid(rows: number, cols: number): (string | null)[][] {
   return Array.from({ length: rows }, () => Array(cols).fill(null));
@@ -335,7 +335,7 @@ const useProjectStore = create<ProjectStore>()(
     }),
     {
       name: 'pps:projects',
-      storage: createJSONStorage(() => projectStorage),
+      storage: createJSONStorage(() => idbStorage),
       partialize: state => ({ projects: state.projects }),
     }
   )

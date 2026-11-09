@@ -3,23 +3,23 @@ import type { StateStorage } from 'zustand/middleware';
 
 const SAVE_DELAY_MS = 400;
 
-function createProjectStorage(): StateStorage {
+function createIdbStorage(): StateStorage {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  let pending: { name: string; value: string } | null = null;
+  const pending = new Map<string, string>();
 
   const flush = async () => {
     if (timer !== undefined) {
       clearTimeout(timer);
       timer = undefined;
     }
-    if (!pending) return;
-
-    const { name, value } = pending;
-    pending = null;
-    try {
-      await set(name, value);
-    } catch (error) {
-      console.error('Could not save projects', error);
+    const entries = Array.from(pending.entries());
+    pending.clear();
+    for (const [name, value] of entries) {
+      try {
+        await set(name, value);
+      } catch (error) {
+        console.error(`Could not save ${name}`, error);
+      }
     }
   };
 
@@ -49,14 +49,14 @@ function createProjectStorage(): StateStorage {
         }
         return legacy;
       } catch (error) {
-        console.error('Could not load projects', error);
+        console.error(`Could not load ${name}`, error);
         return null;
       }
     },
 
     setItem: (name, value) => {
       if (typeof window === 'undefined') return;
-      pending = { name, value };
+      pending.set(name, value);
       if (timer !== undefined) clearTimeout(timer);
       timer = setTimeout(() => {
         void flush();
@@ -64,14 +64,14 @@ function createProjectStorage(): StateStorage {
     },
 
     removeItem: async name => {
-      pending = null;
+      pending.delete(name);
       try {
         await del(name);
       } catch (error) {
-        console.error('Could not remove projects', error);
+        console.error(`Could not remove ${name}`, error);
       }
     },
   };
 }
 
-export const projectStorage = createProjectStorage();
+export const idbStorage = createIdbStorage();
