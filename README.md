@@ -1,6 +1,6 @@
 # Pixel Pattern Studio
 
-**[▶ Live demo](https://balacisofia.github.io/pixel-crochet-app/)**
+**[Live demo](https://balacisofia.github.io/pixel-crochet-app/)**
 
 A **Next.js + TypeScript** web app for designing and following **pixel-based crochet patterns**.
 
