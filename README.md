@@ -1,5 +1,7 @@
 # Pixel Pattern Studio
 
+**[▶ Live demo](https://balacisofia.github.io/pixel-crochet-app/)**
+
 A **Next.js + TypeScript** web app for designing and following **pixel-based crochet patterns**.
 
 Design patterns square by square or turn an image into a pattern, keep track of the yarn you own, then switch to **work mode** to crochet it row by row.
